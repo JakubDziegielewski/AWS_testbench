@@ -59,7 +59,8 @@ def multifactor_auth_for_root(report_file, aws_api):
                 rf.write("mulfifactor authentication for root enabled: True\n")
         else:
             with open(report_file, 'a') as rf:
-                rf.write("ALERT: mulfifactor authentication for root enabled: False\n")
+                rf.write(
+                    "ALERT: mulfifactor authentication for root enabled: False\n")
 
 
 def when_root_was_last_used(report_file, aws_api):
@@ -137,12 +138,28 @@ def mfa_enabled_for_all_users(report_file, aws_api):
                         rf.write(f"User {row[0]} has mfa enabled\n")
 
 
-# def check_for_unused_keys(report_file, aws_api):
+def check_for_unused_keys(report_file, aws_api):
+    with open("credential_report.csv", "r") as cr:
+        csv_reader = csv.reader(cr, delimiter=",")
+        for row in csv_reader:
+            if row[3] == "true":
+                if row[8] == "true" and row[10] == "N/A":
+                    with open(report_file, 'a') as rf:
+                        rf.write(
+                            f"ALERT: User {row[0]} has an unused access_key_1\n")
+                if row[13] == "true" and row[15] == "N/A":
+                    with open(report_file, 'a') as rf:
+                        rf.write(
+                            f"ALERT: User {row[0]} has an unused access_key_2\n")
 
-generate_and_save_credntial_report("report", aws)
-no_root_access_key_exist("report", aws)
-multifactor_auth_for_root("report", aws)
-when_root_was_last_used("report", aws)
-password_longer_than_14_chars("report", aws)
-password_reuse_preventrion("report", aws)
-mfa_enabled_for_all_users("report", aws)
+
+#def unused_credentials_does_not_exist(report_file, aws_api):
+
+    # generate_and_save_credntial_report("report", aws)
+    # no_root_access_key_exist("report", aws)
+    # multifactor_auth_for_root("report", aws)
+    # when_root_was_last_used("report", aws)
+    # password_longer_than_14_chars("report", aws)
+    # password_reuse_preventrion("report", aws)
+    # mfa_enabled_for_all_users("report", aws)
+    # check_for_unused_keys
