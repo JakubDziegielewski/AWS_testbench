@@ -315,12 +315,83 @@ def full_administrative_privileges_are_not_attached(report_file, aws_api):
                 statement = policy_properties["Document"]["Statement"]
                 for position in statement:
                     if position["Effect"] == "Allow" and position["Action"] == "*" and position["Resource"] == "*":
-                            with open(report_file, "a") as rf:
-                                rf.write(
-                                    f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed\n")
+                        with open(report_file, "a") as rf:
+                            rf.write(
+                                f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed\n")
 
 
-"""generate_and_save_credntial_report("report", aws)
+@signal_when_test_starts_and_finishes
+def support_role_has_been_created(report_file, aws_api):
+    try:
+        output = aws_api.execute(
+            ["iam", "list-policies", "--query", "Policies[?PolicyName == 'AWSSupportAccess']", "--output", "json"])
+    except AWSCLIError as e:
+        with open(report_file, "a") as rf:
+            rf.write(
+                f"An error ocured while running test support_role_has_been_created: {e}\n")
+    else:
+        aws_support_access = json.loads(output)
+        arn = aws_support_access[0]["Arn"]
+        try:
+            entities_for_policy = aws_api.execute(
+                ["iam", "list-entities-for-policy", "--policy-arn", arn, "--output", "json"])
+        except AWSCLIError as e:
+            with open(report_file, "a") as rf:
+                rf.write(
+                    f"An error ocured while running test support_role_has_been_created: {e}\n")
+        else:
+            policy_roles = json.loads(entities_for_policy)["PolicyRoles"]
+            if len(policy_roles) == 0:
+                with open(report_file, "a") as rf:
+                    rf.write(
+                        f"ALERT: There is no support role for managing incidents with AWS Support\n")
+
+
+@signal_when_test_starts_and_finishes
+def expired_certificates_stored_in_aws_iam(report_file, aws_api):
+    try:
+        output = aws_api.execute(
+            ["iam", "list-server-certificates", "--output", "json"])
+    except AWSCLIError as e:
+        with open(report_file, "a") as rf:
+            rf.write(
+                f"An error ocured while running test expired_certificates_stored_in_aws_iam: {e}\n")
+    else:
+        server_cerificates_metadata_list = json.loads(
+            output)["ServerCertificateMetadataList"]
+        for certificate in server_cerificates_metadata_list:
+            expiration = certificate["Expiration"]
+            expiration_date = datetime.strptime(
+                expiration[:10] + " " + expiration[11:19], "%Y-%m-%d %H:%M:%S")
+            current_date = datetime.now()
+            if current_date > expiration_date:
+                with open(report_file, "a") as rf:
+                    rf.write(
+                        f"ALERT: Certificate with id: {certificate['ServerCertificateId']} is expired. You should delete it\n")
+
+
+@signal_when_test_starts_and_finishes
+def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions):
+    for region in regions:
+        try:
+            output = aws_api.execute(
+                ["accessanalyzer", "list-analyzers", "--region", region, "--output", "json"])
+        except AWSCLIError as e:
+            with open(report_file, "a") as rf:
+                rf.write(
+                    f"An error ocured while running test iam_access_analyzer_is_enabled_for_all_regions: {e}\n")
+        else:
+            analyzers = json.loads(output)["analyzers"]
+            for analyzer in analyzers:
+                if analyzer["status"] == "ACTIVE":
+                    break
+            else:
+                with open(report_file, "a") as rf:
+                    rf.write(
+                        f"ALERT: in {region} region there aren't any working access analyzers\n")
+
+"""
+generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
 multifactor_auth_for_root("report", aws)
 when_root_was_last_used("report")
@@ -331,6 +402,9 @@ check_for_unused_keys("report")
 check_for_unused_credentials_older_than_45_days("report")
 users_have_multiple_access_keys("report")
 define_age_of_access_key("report")
-"""
-# users_recieve_permissions_only_through_groups("report", aws)
+users_recieve_permissions_only_through_groups("report", aws)
 full_administrative_privileges_are_not_attached("report", aws)
+support_role_has_been_created("report", aws)
+expired_certificates_stored_in_aws_iam("report", aws)
+iam_access_analyzer_is_enabled_for_all_regions("report", aws, ["us-east-1", "eu-central-1"])
+"""
