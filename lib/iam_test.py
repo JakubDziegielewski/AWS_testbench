@@ -290,6 +290,36 @@ def users_recieve_permissions_only_through_groups(report_file, aws_api):
                             f"ALERT: User {user} has following user policies: {user_policies['PolicyNames']}; it's recommended to give permissions only through groups!\n")
 
 
+@signal_when_test_starts_and_finishes
+def full_administrative_privileges_are_not_attached(report_file, aws_api):
+    try:
+        output = aws_api.execute(
+            ["iam", "list-policies", "--only-attached", "--output", "json"])
+    except AWSCLIError as e:
+        with open(report_file, "a") as rf:
+            rf.write(
+                f"An error ocured while running test full_administrative_privileges_are_not_attached: {e}\n")
+    else:
+        policies = json.loads(output)["Policies"]
+        for policy in policies:
+            try:
+                policy_version_properties = aws_api.execute(
+                    ["iam", "get-policy-version", "--policy-arn", policy["Arn"], "--version-id", policy["DefaultVersionId"], "--output", "json"])
+            except:
+                with open(report_file, "a") as rf:
+                    rf.write(
+                        f"An error ocured while running test full_administrative_privileges_are_not_attached: {e}\n")
+            else:
+                policy_properties = json.loads(policy_version_properties)[
+                    "PolicyVersion"]
+                statement = policy_properties["Document"]["Statement"]
+                for position in statement:
+                    if position["Effect"] == "Allow" and position["Action"] == "*" and position["Resource"] == "*":
+                            with open(report_file, "a") as rf:
+                                rf.write(
+                                    f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed\n")
+
+
 """generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
 multifactor_auth_for_root("report", aws)
@@ -302,4 +332,5 @@ check_for_unused_credentials_older_than_45_days("report")
 users_have_multiple_access_keys("report")
 define_age_of_access_key("report")
 """
-users_recieve_permissions_only_through_groups("report", aws)
+# users_recieve_permissions_only_through_groups("report", aws)
+full_administrative_privileges_are_not_attached("report", aws)
