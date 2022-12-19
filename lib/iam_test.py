@@ -258,7 +258,39 @@ def define_age_of_access_key(report_file, credential_report="credential_report.c
                             f"ALERT: access_key_2 if user {user[0]} is older than 90 days\n")
 
 
-generate_and_save_credntial_report("report", aws)
+@signal_when_test_starts_and_finishes
+def users_recieve_permissions_only_through_groups(report_file, aws_api):
+    try:
+        output = aws_api.execute(
+            ["iam", "list-users", "--query", "Users[*].UserName", "--output", "text"])
+    except AWSCLIError as e:
+        with open(report_file, "a") as rf:
+            rf.write(
+                f"An error ocured while running test users_recieve_permissions_only_through_groups: {e}\n")
+    else:
+        users = output.strip("\n").split("\t")
+        for user in users:
+            try:
+                attached_user_policies = json.loads(aws_api.execute(
+                    ["iam", "list-attached-user-policies", "--user-name", user]))
+                user_policies = json.loads(aws_api.execute(
+                    ["iam", "list-user-policies", "--user-name", user]))
+            except AWSCLIError as e:
+                with open(report_file, "a") as rf:
+                    rf.write(
+                        f"An error ocured while running test users_recieve_permissions_only_through_groups: {e}\n")
+            else:
+                if len(attached_user_policies["AttachedPolicies"]) > 0:
+                    with open(report_file, "a") as rf:
+                        rf.write(
+                            f"ALERT: User {user} has following attached policies: {attached_user_policies['AttachedPolicies']}; it's recommended to give permissions only through groups!\n")
+                if len(user_policies["PolicyNames"]) > 0:
+                    with open(report_file, "a") as rf:
+                        rf.write(
+                            f"ALERT: User {user} has following user policies: {user_policies['PolicyNames']}; it's recommended to give permissions only through groups!\n")
+
+
+"""generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
 multifactor_auth_for_root("report", aws)
 when_root_was_last_used("report")
@@ -269,3 +301,5 @@ check_for_unused_keys("report")
 check_for_unused_credentials_older_than_45_days("report")
 users_have_multiple_access_keys("report")
 define_age_of_access_key("report")
+"""
+users_recieve_permissions_only_through_groups("report", aws)
