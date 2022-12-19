@@ -1,0 +1,37 @@
+
+Starting test generate_and_save_credntial_report
+Ending test generate_and_save_credntial_report
+
+Starting test no_root_access_key_exist
+No rooot access keys exist: True
+Ending test no_root_access_key_exist
+
+Starting test multifactor_auth_for_root
+ALERT: mulfifactor authentication for root enabled: False
+Ending test multifactor_auth_for_root
+
+Starting test when_root_was_last_used
+Root acccount was not accessed in the last 7 days: Password was last used: 2022-12-04T11:25:20+00:00, Access key 1 was last used: N/A, Access key 2 was last used: N/A
+Ending test when_root_was_last_used
+
+Starting test password_longer_than_14_chars
+ALERT: minimal password length: 8, shoud be: 14
+Ending test password_longer_than_14_chars
+
+Starting test password_reuse_preventrion
+ALERT: password_reuse_prevention is set to: 2, shoud be: 24
+Ending test password_reuse_preventrion
+
+Starting test mfa_enabled_for_all_users
+ALERT! User jake does not have mfa enabled
+ALERT! User test_account does not have mfa enabled
+Ending test mfa_enabled_for_all_users
+
+Starting test check_for_unused_keys
+Ending test check_for_unused_keys
+
+Starting test check_for_unused_credentials_older_than_45_days
+Ending test check_for_unused_credentials_older_than_45_days
+
+Starting test users_have_multiple_access_keys
+Ending test users_have_multiple_access_keys
