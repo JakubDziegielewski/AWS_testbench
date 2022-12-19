@@ -1,7 +1,6 @@
 from awscliv2.api import AWSAPI
 from awscliv2.exceptions import AWSCLIError
 from datetime import datetime
-import time
 import json
 import base64
 import csv
