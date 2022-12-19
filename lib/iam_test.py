@@ -89,17 +89,18 @@ def multifactor_auth_for_root(report_file, aws_api):
 def when_root_was_last_used(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
-        for row in csv_reader:
-            if row[0] == "<root_account>":
-                days_since_root_password_was_last_used = find_age_of_credentials(row[4])
+        for user in csv_reader:
+            if user[0] == "<root_account>":
+                days_since_root_password_was_last_used = find_age_of_credentials(
+                    user[4])
                 if days_since_root_password_was_last_used < 7:
                     with open(report_file, 'a') as rf:
                         rf.write(
-                            f"ALERT: root acccount was accessed in the last 7 days: Password was last used: {row[4]}\n")
+                            f"ALERT: root acccount was accessed in the last 7 days: Password was last used: {user[4]}\n")
                 else:
                     with open(report_file, 'a') as rf:
                         rf.write(
-                            f"Root acccount was not accessed in the last 7 days: Password was last used: {row[4]}, Access key 1 was last used: {row[10]}, Access key 2 was last used: {row[15]}\n")
+                            f"Root acccount was not accessed in the last 7 days: Password was last used: {user[4]}, Access key 1 was last used: {user[10]}, Access key 2 was last used: {user[15]}\n")
 
 
 @signal_when_test_starts_and_finishes
@@ -150,92 +151,112 @@ def password_reuse_prevention(report_file, aws_api):
 def mfa_enabled_for_all_users(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
-        for row in csv_reader:
-            if row[3] == "true":
-                if row[7] == "false":
+        for user in csv_reader:
+            if user[3] == "true":
+                if user[7] == "false":
                     with open(report_file, 'a') as rf:
                         rf.write(
-                            f"ALERT! User {row[0]} does not have mfa enabled\n")
+                            f"ALERT! User {user[0]} does not have mfa enabled\n")
                 else:
                     with open(report_file, 'a') as rf:
-                        rf.write(f"User {row[0]} has mfa enabled\n")
+                        rf.write(f"User {user[0]} has mfa enabled\n")
 
 
 @signal_when_test_starts_and_finishes
 def check_for_unused_keys(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
-        for row in csv_reader:
-            if row[3] == "true":
-                if row[8] == "true" and row[10] == "N/A":
+        for user in csv_reader:
+            if user[3] == "true":
+                if user[8] == "true" and user[10] == "N/A":
                     with open(report_file, 'a') as rf:
                         rf.write(
-                            f"ALERT: User {row[0]} has an unused access_key_1\n")
-                if row[13] == "true" and row[15] == "N/A":
+                            f"ALERT: User {user[0]} has an unused access_key_1\n")
+                if user[13] == "true" and user[15] == "N/A":
                     with open(report_file, 'a') as rf:
                         rf.write(
-                            f"ALERT: User {row[0]} has an unused access_key_2\n")
+                            f"ALERT: User {user[0]} has an unused access_key_2\n")
 
 
 @signal_when_test_starts_and_finishes
 def check_for_unused_credentials_older_than_45_days(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
-        for row in csv_reader:
-            if row[3] == "true":
-                if row[4] != "no_information":
-                    days_since_password_was_last_used = find_age_of_credentials(row[4])
+        for user in csv_reader:
+            if user[3] == "true":
+                if user[4] != "no_information":
+                    days_since_password_was_last_used = find_age_of_credentials(
+                        user[4])
                     if days_since_password_was_last_used > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use password in the last 45 days- you should disable this method of autentiction \n")
+                                f"ALERT: User {user[0]} did not use password in the last 45 days- you should disable this method of autentiction \n")
                 else:
-                    password_age = find_age_of_credentials(row[5])
+                    password_age = find_age_of_credentials(user[5])
                     if password_age > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use their current password and it's older than 45 days\n")
+                                f"ALERT: User {user[0]} did not use their current password and it's older than 45 days\n")
 
-            if row[8] == "true":
-                if row[10] != "N/A":
-                    days_since_key1_was_last_used = find_age_of_credentials(row[10])
-                    if days_since_key1_was_last_used > 45:
+            if user[8] == "true":
+                if user[10] != "N/A":
+                    days_since_key_1_was_last_used = find_age_of_credentials(
+                        user[10])
+                    if days_since_key_1_was_last_used > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use access_key_1 in the last 45 days- you should disable this method of autentiction \n")
+                                f"ALERT: User {user[0]} did not use access_key_1 in the last 45 days- you should disable this method of autentiction \n")
                 else:
-                    key1_age = find_age_of_credentials(row[9])
-                    if key1_age > 45:
+                    key_1_age = find_age_of_credentials(user[9])
+                    if key_1_age > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use access_key_1 and access_key_1 is older than 45 days- you should rotate this key\n")
-            if row[13] == "true":
-                if row[15] != "N/A":
-                    days_since_key2_was_last_used = find_age_of_credentials(row[15])
-                    if days_since_key2_was_last_used > 45:
+                                f"ALERT: User {user[0]} did not use access_key_1 and access_key_1 is older than 45 days- you should rotate this key\n")
+            if user[13] == "true":
+                if user[15] != "N/A":
+                    days_since_key_2_was_last_used = find_age_of_credentials(
+                        user[15])
+                    if days_since_key_2_was_last_used > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use access_key_2 in the last 45 days- you should disable this method of autentiction \n")
+                                f"ALERT: User {user[0]} did not use access_key_2 in the last 45 days- you should disable this method of autentiction \n")
                 else:
-                    key2_age = find_age_of_credentials(row[14])
-                    if key2_age > 45:
+                    key_2_age = find_age_of_credentials(user[14])
+                    if key_2_age > 45:
                         with open(report_file, 'a') as rf:
                             rf.write(
-                                f"ALERT: User {row[0]} did not use access_key_2 and access_key_2 is older than 45 days- you should rotate this key\n")
+                                f"ALERT: User {user[0]} did not use access_key_2 and access_key_2 is older than 45 days- you should rotate this key\n")
 
 
 @signal_when_test_starts_and_finishes
 def users_have_multiple_access_keys(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
-        for row in csv_reader:
-            if row[8] == "true" and row[13] == "true":
+        for user in csv_reader:
+            if user[8] == "true" and user[13] == "true":
                 with open(report_file, 'a') as rf:
                     rf.write(
-                        f"User {row[0]} has two access keys active- you should disable at least on of them")
+                        f"User {user[0]} has two access keys active- you should disable at least on of them")
 
 
-# def unused_credentials_does_not_exist(report_file, aws_api):
+@signal_when_test_starts_and_finishes
+def define_age_of_access_key(report_file, credential_report="credential_report.csv"):
+    with open(credential_report, "r") as cr:
+        csv_reader = csv.reader(cr, delimiter=",")
+        for user in csv_reader:
+            if user[8] == "true":
+                key_1_age = find_age_of_credentials(user[9])
+                if key_1_age > 90:
+                    with open(report_file, 'a') as rf:
+                        rf.write(
+                            f"ALERT: access_key_1 if user {user[0]} is older than 90 days\n")
+            if user[13] == "true":
+                key_2_age = find_age_of_credentials(user[14])
+                if key_2_age > 90:
+                    with open(report_file, 'a') as rf:
+                        rf.write(
+                            f"ALERT: access_key_2 if user {user[0]} is older than 90 days\n")
+
 
 generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
@@ -247,3 +268,4 @@ mfa_enabled_for_all_users("report")
 check_for_unused_keys("report")
 check_for_unused_credentials_older_than_45_days("report")
 users_have_multiple_access_keys("report")
+define_age_of_access_key("report")
