@@ -333,7 +333,7 @@ def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions
                 write_message_in_report(
                     report_file, f"ALERT: in {region} region there aren't any working access analyzers")
 
-
+"""
 generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
 multifactor_auth_for_root("report", aws)
@@ -351,3 +351,4 @@ support_role_has_been_created("report", aws)
 expired_certificates_stored_in_aws_iam("report", aws)
 iam_access_analyzer_is_enabled_for_all_regions(
     "report", aws, ["us-east-1", "eu-central-1"])
+"""
