@@ -12,6 +12,7 @@ aws = AWSAPI()
 
 
 def generate_and_save_credntial_report(report_file, aws_api, credential_report="credential_report.csv"):
+
     try:
         aws.execute(
             ["iam", "generate-credential-report"])
@@ -27,7 +28,10 @@ def generate_and_save_credntial_report(report_file, aws_api, credential_report="
 
 @signal_when_test_starts_and_finishes
 def no_root_access_key_exist(report_file, aws_api):
+
     try:
+        write_message_in_report(
+            report_file,  "Control 1.4")
         output = aws_api.execute(["iam", "get-account-summary"])
     except AWSCLIError as e:
         write_message_in_report(
@@ -37,19 +41,21 @@ def no_root_access_key_exist(report_file, aws_api):
             output)["SummaryMap"]["AccountAccessKeysPresent"]
         if number_of_root_access_keys == 0:
             write_message_in_report(
-                report_file, "No rooot access keys exist: True")
+                report_file, "No root access keys exist: True")
         else:
             write_message_in_report(
                 report_file, f"ALERT: At leas one root access keys exists; number of access keys:{number_of_root_access_keys}")
 
 
 @signal_when_test_starts_and_finishes
-def multifactor_auth_for_root(report_file, aws_api):
+def mfs_is_enabled_for_the_root_user(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.5")
         output = aws_api.execute(["iam", "get-account-summary"])
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test multifactor_auth_for_root: {e}")
+            report_file, f"An error ocured while running test mfs_is_enabled_for_the_root_user: {e}")
     else:
         number_of_root_access_keys = json.loads(
             output)["SummaryMap"]["AccountMFAEnabled"]
@@ -62,7 +68,9 @@ def multifactor_auth_for_root(report_file, aws_api):
 
 
 @signal_when_test_starts_and_finishes
-def when_root_was_last_used(report_file, credential_report="credential_report.csv"):
+def eliminate_use_of_the_root_user_for_administrative_and_daily_task(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.7")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
@@ -78,12 +86,14 @@ def when_root_was_last_used(report_file, credential_report="credential_report.cs
 
 
 @signal_when_test_starts_and_finishes
-def password_longer_than_14_chars(report_file, aws_api):
+def iam_password_policy_requires_minimum_length_of_14(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.8")
         output = aws_api.execute(["iam", "get-account-password-policy"])
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test password_longer_than_14_chars: {e}")
+            report_file, f"An error ocured while running test iam_password_policy_requires_minimum_length_of_14: {e}")
     else:
         minimal_password_length = json.loads(
             output)["PasswordPolicy"]["MinimumPasswordLength"]
@@ -96,17 +106,19 @@ def password_longer_than_14_chars(report_file, aws_api):
 
 
 @signal_when_test_starts_and_finishes
-def password_reuse_prevention(report_file, aws_api):
+def iam_password_policy_prevents_password_reuse(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.9")
         output = aws_api.execute(["iam", "get-account-password-policy"])
         password_reuse_prevention = json.loads(
             output)["PasswordPolicy"]["PasswordReusePrevention"]
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test password_reuse_prevention: {e}")
+            report_file, f"An error ocured while running test iam_password_policy_prevents_password_reuse: {e}")
     except KeyError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test password_reuse_prevention: {e} is not enabled")
+            report_file, f"An error ocured while running test iam_password_policy_prevents_password_reuse: {e} is not enabled")
     else:
         if password_reuse_prevention < 24:
             write_message_in_report(
@@ -118,6 +130,8 @@ def password_reuse_prevention(report_file, aws_api):
 
 @signal_when_test_starts_and_finishes
 def mfa_enabled_for_all_users(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.10")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
@@ -132,6 +146,8 @@ def mfa_enabled_for_all_users(report_file, credential_report="credential_report.
 
 @signal_when_test_starts_and_finishes
 def check_for_unused_keys(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.11")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
@@ -139,9 +155,15 @@ def check_for_unused_keys(report_file, credential_report="credential_report.csv"
                 if user[8] == "true" and user[10] == "N/A":
                     write_message_in_report(
                         report_file, f"ALERT: User {user[0]} has an unused access_key_1")
+                else:
+                    write_message_in_report(
+                        report_file, f"Setting Access_key_1 for User {user[0]} is set correctly")
                 if user[13] == "true" and user[15] == "N/A":
                     write_message_in_report(
                         report_file, f"ALERT: User {user[0]} has an unused access_key_2")
+                else:
+                    write_message_in_report(
+                        report_file, f"Setting Access_key_2 for User {user[0]} is set correctly")
 
 
 def check_credential_usage(report_file, name, last_used, last_rotated, credential):
@@ -154,15 +176,23 @@ def check_credential_usage(report_file, name, last_used, last_rotated, credentia
         if days_since_credential_was_last_used > 45:
             write_message_in_report(
                 report_file, f"ALERT: User {name} did not use current {credential} in the last 45 days- you should disable this method of autentiction")
+        else:
+            write_message_in_report(
+                report_file, f"{credential} for user {name} is set correctly")
     else:
         credential_age = find_age_of_credentials(last_rotated)
         if credential_age > 45:
             write_message_in_report(
                 report_file, f"ALERT: User {name} did not use current {credential} and thier {credential} is older than 45 days- you should update {credential}")
+        else:
+            write_message_in_report(
+                report_file, f"{credential} for user {name} is set correctly")
 
 
 @signal_when_test_starts_and_finishes
 def check_for_unused_credentials_older_than_45_days(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.12")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
@@ -181,16 +211,23 @@ def check_for_unused_credentials_older_than_45_days(report_file, credential_repo
 
 @signal_when_test_starts_and_finishes
 def users_have_multiple_access_keys(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.13")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
             if user[8] == "true" and user[13] == "true":
                 write_message_in_report(
-                    report_file, f"User {user[0]} has two access keys active- you should disable one of them")
+                    report_file, f"ALERT: User {user[0]} has two access keys active- you should disable one of them")
+            else:
+                write_message_in_report(
+                    report_file, f"User {user[0]} has no more than 1 key active")
 
 
 @signal_when_test_starts_and_finishes
-def define_age_of_access_key(report_file, credential_report="credential_report.csv"):
+def access_keys_are_rotated_every_90_dys_or_less(report_file, credential_report="credential_report.csv"):
+    write_message_in_report(
+        report_file,  "Control 1.14")
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
@@ -199,16 +236,24 @@ def define_age_of_access_key(report_file, credential_report="credential_report.c
                 if key_1_age > 90:
                     write_message_in_report(
                         report_file, f"ALERT: access_key_1 if user {user[0]} is older than 90 days")
+                else:
+                    write_message_in_report(
+                        report_file, f"access_key_1 is fresh enough")
             if user[13] == "true":
                 key_2_age = find_age_of_credentials(user[14])
                 if key_2_age > 90:
                     write_message_in_report(
                         report_file, f"ALERT: access_key_2 if user {user[0]} is older than 90 days")
+                else:
+                    write_message_in_report(
+                        report_file, f"access_key_2 is fresh enough")
 
 
 @signal_when_test_starts_and_finishes
 def users_recieve_permissions_only_through_groups(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.15")
         output = aws_api.execute(
             ["iam", "list-users", "--query", "Users[*].UserName", "--output", "text"])
     except AWSCLIError as e:
@@ -229,14 +274,22 @@ def users_recieve_permissions_only_through_groups(report_file, aws_api):
                 if len(attached_user_policies["AttachedPolicies"]) > 0:
                     write_message_in_report(
                         report_file, f"ALERT: User {user} has following attached policies: {attached_user_policies['AttachedPolicies']}; it's recommended to give permissions only through groups!")
+                else:
+                    write_message_in_report(
+                        report_file, f"User {user} does not have attached polices")
                 if len(user_policies["PolicyNames"]) > 0:
                     write_message_in_report(
                         report_file, f"ALERT: User {user} has following user policies: {user_policies['PolicyNames']}; it's recommended to give permissions only through groups!")
+                else:
+                    write_message_in_report(
+                        report_file, f"User {user} does not have user polices")
 
 
 @signal_when_test_starts_and_finishes
 def full_administrative_privileges_are_not_attached(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.16")
         output = aws_api.execute(
             ["iam", "list-policies", "--only-attached", "--output", "json"])
     except AWSCLIError as e:
@@ -259,11 +312,16 @@ def full_administrative_privileges_are_not_attached(report_file, aws_api):
                     if position["Effect"] == "Allow" and position["Action"] == "*" and position["Resource"] == "*":
                         write_message_in_report(
                             report_file, f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed")
+                    else:
+                        write_message_in_report(
+                            report_file, f"Test passed for policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']};")
 
 
 @signal_when_test_starts_and_finishes
 def support_role_has_been_created(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.17")
         output = aws_api.execute(
             ["iam", "list-policies", "--query", "Policies[?PolicyName == 'AWSSupportAccess']", "--output", "json"])
     except AWSCLIError as e:
@@ -283,19 +341,27 @@ def support_role_has_been_created(report_file, aws_api):
             if len(policy_roles) == 0:
                 write_message_in_report(
                     report_file, f"ALERT: There is no support role for managing incidents with AWS Support")
+            else:
+                write_message_in_report(
+                    report_file, f"Support role for managing incidents with AWS Support exists")
 
 
 @signal_when_test_starts_and_finishes
-def expired_certificates_stored_in_aws_iam(report_file, aws_api):
+def expired_certificates_stored_in_aws_iam_are_removed(report_file, aws_api):
     try:
+        write_message_in_report(
+            report_file,  "Control 1.19")
         output = aws_api.execute(
             ["iam", "list-server-certificates", "--output", "json"])
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test expired_certificates_stored_in_aws_iam: {e}")
+            report_file, f"An error ocured while running test expired_certificates_stored_in_aws_iam_are_removed: {e}")
     else:
         server_cerificates_metadata_list = json.loads(
             output)["ServerCertificateMetadataList"]
+        if len(server_cerificates_metadata_list) == 0:
+            write_message_in_report(
+                report_file, f"Currently there are 0 certificates stored")
         for certificate in server_cerificates_metadata_list:
             expiration = certificate["Expiration"]
             expiration_date = datetime.strptime(
@@ -304,10 +370,15 @@ def expired_certificates_stored_in_aws_iam(report_file, aws_api):
             if current_date > expiration_date:
                 write_message_in_report(
                     report_file, f"ALERT: Certificate with id: {certificate['ServerCertificateId']} is expired. You should delete it")
+            else:
+                write_message_in_report(
+                    report_file, f"Certificate with id: {certificate['ServerCertificateId']} is valid")
 
 
 @signal_when_test_starts_and_finishes
 def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions):
+    write_message_in_report(
+        report_file,  "Control 1.20")
     for region in regions:
         try:
             output = aws_api.execute(
@@ -319,28 +390,28 @@ def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions
             analyzers = json.loads(output)["analyzers"]
             for analyzer in analyzers:
                 if analyzer["status"] == "ACTIVE":
+                    write_message_in_report(
+                        report_file, f"In {region} region there is at least one working access analuzer")
                     break
             else:
                 write_message_in_report(
                     report_file, f"ALERT: in {region} region there aren't any working access analyzers")
 
 
-"""
 generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
-multifactor_auth_for_root("report", aws)
-when_root_was_last_used("report")
-password_longer_than_14_chars("report", aws)
-password_reuse_prevention("report", aws)
+mfs_is_enabled_for_the_root_user("report", aws)
+eliminate_use_of_the_root_user_for_administrative_and_daily_task("report")
+iam_password_policy_requires_minimum_length_of_14("report", aws)
+iam_password_policy_prevents_password_reuse("report", aws)
 mfa_enabled_for_all_users("report")
 check_for_unused_keys("report")
 check_for_unused_credentials_older_than_45_days("report")
 users_have_multiple_access_keys("report")
-define_age_of_access_key("report")
+access_keys_are_rotated_every_90_dys_or_less("report")
 users_recieve_permissions_only_through_groups("report", aws)
 full_administrative_privileges_are_not_attached("report", aws)
 support_role_has_been_created("report", aws)
-expired_certificates_stored_in_aws_iam("report", aws)
+expired_certificates_stored_in_aws_iam_are_removed("report", aws)
 iam_access_analyzer_is_enabled_for_all_regions(
     "report", aws, ["us-east-1", "eu-central-1"])
-"""

@@ -36,9 +36,9 @@ def get_specific_bucket_configuration(report_file, aws_api, config, name, keywor
 
 @signal_when_test_starts_and_finishes
 def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
-
+    write_message_in_report(
+        report_file,  "Control 2.1.1")
     buckets = get_list_of_s3_buckets(report_file, aws_api)
-
     for bucket in buckets:
         name = bucket["Name"]
         configuration = get_specific_bucket_configuration(
@@ -61,6 +61,8 @@ def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
 
 @signal_when_test_starts_and_finishes
 def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
+    write_message_in_report(
+        report_file,  "Control 2.1.2")
     buckets = get_list_of_s3_buckets(report_file, aws_api)
     for bucket in buckets:
         name = bucket["Name"]
@@ -80,6 +82,8 @@ def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
 
 @signal_when_test_starts_and_finishes
 def mfa_delete_is_enabled(report_file, aws_api):
+    write_message_in_report(
+        report_file,  "Control 2.1.3")
     buckets = get_list_of_s3_buckets(report_file, aws_api)
     for bucket in buckets:
         name = bucket["Name"]
@@ -94,21 +98,19 @@ def mfa_delete_is_enabled(report_file, aws_api):
             else:
                 if "MfaDelete" in properties and properties["MfaDelete"] == "Enabled":
                     write_message_in_report(
-                        report_file, f"MFA Delete is enabled in {name} bucket"
-                    )
-
+                        report_file, f"MFA Delete is enabled in {name} bucket")
                 else:
                     write_message_in_report(
-                        report_file, f"ALERT: MFA Delete is not enabled in {name} bucket"
-                    )
+                        report_file, f"ALERT: MFA Delete is not enabled in {name} bucket")
         else:
             write_message_in_report(
-                report_file, f"ALERT: Versioning is not enabled in {name} bucket"
-            )
+                report_file, f"ALERT: Versioning is not enabled in {name} bucket")
 
 
 @signal_when_test_starts_and_finishes
 def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_file, aws_api):
+    write_message_in_report(
+        report_file,  "Control 2.1.5")
     buckets = get_list_of_s3_buckets(report_file, aws_api)
     for bucket in buckets:
         name = bucket["Name"]
