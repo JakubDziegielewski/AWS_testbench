@@ -9,42 +9,74 @@ from auxilary_module import write_message_in_report
 aws = AWSAPI()
 
 
-@signal_when_test_starts_and_finishes
-def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
+def get_list_of_s3_buckets(report_file, aws_api):
     try:
         output = aws_api.execute(
             ["s3api", "list-buckets", "--output", "json"])
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running test s3_buckets_employ_encryption_at_rest: {e}")
+            report_file, f"An error ocured while getting list of s3 buckets: {e}")
     else:
-        buckets = json.loads(output)["Buckets"]
-        for bucket in buckets:
-            name = bucket["Name"]
-            try:
-                encryption_configuration = aws_api.execute([
-                    "s3api", "get-bucket-encryption", "--bucket", name, "--output", "json"])
-                rules = json.loads(encryption_configuration)[
-                    "ServerSideEncryptionConfiguration"]["Rules"]
-            except AWSCLIError as e:
-                write_message_in_report(
-                    report_file, f"An error ocured while running test s3_buckets_employ_encryption_at_rest: {e}")
-            except JSONDecodeError as e:
-                write_message_in_report(
-                    report_file, f"ALERT: bucket {name} does not employ encryption"
-                )
-            else:
-                for rule in rules:
-                    if "ApplyServerSideEncryptionByDefault" in rule:
-                        algorithm = rule["ApplyServerSideEncryptionByDefault"]["SSEAlgorithm"]
-                        if algorithm == "AES256" or algorithm == "aws:kms":
-                            write_message_in_report(
-                                report_file, f"Recommended encryption algorithm  ({algorithm}) is used in bucket {name}")
-                        else:
-                            write_message_in_report(
-                                report_file, f"ALERT: Unrecommended encryption algorithm  ({algorithm}) is used in bucket {name}")
+        return (json.loads(output)["Buckets"])
+
+
+def get_specific_bucket_configuration(report_file, aws_api, config, name, keyword):
+    try:
+        configuration = aws_api.execute(
+            ["s3api", config, "--bucket", name, "--output", "json"])
+        result = json.loads(configuration)[keyword]
+    except AWSCLIError as e:
+        write_message_in_report(
+            report_file, f"An error ocured while running test s3_buckets_employ_encryption_at_rest: {e}")
+    except JSONDecodeError as e:
+        write_message_in_report(
+            report_file, f"ALERT: bucket {name} does not return correct config, checked configuration ({config}) probably does not exist: {e}")
+    else:
+        return result
+
+
+@signal_when_test_starts_and_finishes
+def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
+
+    buckets = get_list_of_s3_buckets(report_file, aws_api)
+
+    for bucket in buckets:
+        name = bucket["Name"]
+        configuration = get_specific_bucket_configuration(
+            report_file, aws_api, "get-bucket-encryption", name, "ServerSideEncryptionConfiguration")
+        if configuration != None:
+            rules = configuration["Rules"]
+            for rule in rules:
+                if "ApplyServerSideEncryptionByDefault" in rule:
+                    algorithm = rule["ApplyServerSideEncryptionByDefault"]["SSEAlgorithm"]
+                    if algorithm == "AES256" or algorithm == "aws:kms":
+                        write_message_in_report(
+                            report_file, f"Recommended encryption algorithm  ({algorithm}) is used in bucket {name}")
                     else:
                         write_message_in_report(
-                                report_file, f"ALERT: Server side encryption is not applied by default")
+                            report_file, f"ALERT: Unrecommended encryption algorithm  ({algorithm}) is used in bucket {name}")
+                else:
+                    write_message_in_report(
+                        report_file, f"ALERT: Server side encryption is not applied by default")
 
+
+
+@signal_when_test_starts_and_finishes
+def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
+        buckets = get_list_of_s3_buckets(report_file, aws_api)
+        for bucket in buckets:
+            name = bucket["Name"]
+            policy = get_specific_bucket_configuration(
+            report_file, aws_api, "get-bucket-policy", name, "Policy")
+            if policy != None:
+                statement = json.loads(policy)["Statement"]
+                for statement_property in statement:
+                    if statement_property["Effect"] == "Deny" and statement_property["Condition"]["Bool"]["aws:SecureTransport"] == "false":
+                        write_message_in_report(
+                            report_file, f"Bucket {name} denies http requests {name}")
+                        break
+                else:
+                    write_message_in_report(
+                            report_file, f"ALERT: Bucket {name} does not deny http requests {name}")
 s3_buckets_employ_encryption_at_rest("s3_report", aws)
+s3_bucket_policy_is_set_to_deny_http_requests("s3_report", aws)
