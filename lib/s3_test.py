@@ -86,20 +86,26 @@ def mfa_delete_is_enabled(report_file, aws_api):
         bucket_versioning = aws_api.execute(
             ["s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"])
         if bucket_versioning:  # bucket_versioning will be an empty string if versioning is not enabled
-            properties = json.loads(bucket_versioning)
-            if "MfaDelete" in properties and properties["MfaDelete"] == "Enabled":
+            try:
+                properties = json.loads(bucket_versioning)
+            except JSONDecodeError as e:
                 write_message_in_report(
-                    report_file, f"MFA Delete is enabled in {name} bucket"
-                )
-
+                    report_file, f"ALERT: bucket {name} does not return correct configuration; message: {bucket_versioning}; Error: {e}")
             else:
-                write_message_in_report(
-                    report_file, f"ALERT: MFA Delete is not enabled in {name} bucket"
-                )
+                if "MfaDelete" in properties and properties["MfaDelete"] == "Enabled":
+                    write_message_in_report(
+                        report_file, f"MFA Delete is enabled in {name} bucket"
+                    )
+
+                else:
+                    write_message_in_report(
+                        report_file, f"ALERT: MFA Delete is not enabled in {name} bucket"
+                    )
         else:
             write_message_in_report(
                 report_file, f"ALERT: Versioning is not enabled in {name} bucket"
             )
+
 
 @signal_when_test_starts_and_finishes
 def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_file, aws_api):
