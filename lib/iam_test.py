@@ -398,6 +398,7 @@ def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions
                     report_file, f"ALERT: in {region} region there aren't any working access analyzers")
 
 
+"""
 generate_and_save_credntial_report("report", aws)
 no_root_access_key_exist("report", aws)
 mfs_is_enabled_for_the_root_user("report", aws)
@@ -415,3 +416,4 @@ support_role_has_been_created("report", aws)
 expired_certificates_stored_in_aws_iam_are_removed("report", aws)
 iam_access_analyzer_is_enabled_for_all_regions(
     "report", aws, ["us-east-1", "eu-central-1"])
+"""

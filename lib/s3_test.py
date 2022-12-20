@@ -122,6 +122,10 @@ def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_fil
                     write_message_in_report(
                         report_file, f"ALERT: Public access to s3 allowed; {setting} is set to 'false'"
                     )
+                else:
+                    write_message_in_report(
+                        report_file, f"{setting} is set correctly"
+                    )
 
 
 """

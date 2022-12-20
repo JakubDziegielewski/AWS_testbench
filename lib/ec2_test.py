@@ -24,6 +24,10 @@ def ebs_volume_encryption_is_enabled_in_all_regions(report_file, aws_api, region
             if not ebs_encryption_by_default:
                 write_message_in_report(
                     report_file, f"ALERT: in {region} ebs is not encrypted by default")
+            else:
+                write_message_in_report(
+                    report_file, f"EBS is encrypted by default in {region} region"
+                )
 
 
 """
