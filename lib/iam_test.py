@@ -144,48 +144,39 @@ def check_for_unused_keys(report_file, credential_report="credential_report.csv"
                         report_file, f"ALERT: User {user[0]} has an unused access_key_2")
 
 
+def check_credential_usage(report_file, name, last_used, last_rotated, credential):
+    """
+    auxilary method for check_for_unused_credentials_older_than_45_days
+    """
+    if last_used != "N/A" and last_used != "no_information":
+        days_since_credential_was_last_used = find_age_of_credentials(
+            last_used)
+        if days_since_credential_was_last_used > 45:
+            write_message_in_report(
+                report_file, f"ALERT: User {name} did not use current {credential} in the last 45 days- you should disable this method of autentiction")
+    else:
+        credential_age = find_age_of_credentials(last_rotated)
+        if credential_age > 45:
+            write_message_in_report(
+                report_file, f"ALERT: User {name} did not use current {credential} and thier {credential} is older than 45 days- you should update {credential}")
+
+
 @signal_when_test_starts_and_finishes
 def check_for_unused_credentials_older_than_45_days(report_file, credential_report="credential_report.csv"):
     with open(credential_report, "r") as cr:
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
             if user[3] == "true":
-                if user[4] != "no_information":
-                    days_since_password_was_last_used = find_age_of_credentials(
-                        user[4])
-                    if days_since_password_was_last_used > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use password in the last 45 days- you should disable this method of autentiction")
-                else:
-                    password_age = find_age_of_credentials(user[5])
-                    if password_age > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use their current password and it's older than 45 days")
+                check_credential_usage(
+                    report_file, user[0], user[4], user[5], "password")
 
             if user[8] == "true":
-                if user[10] != "N/A":
-                    days_since_key_1_was_last_used = find_age_of_credentials(
-                        user[10])
-                    if days_since_key_1_was_last_used > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use access_key_1 in the last 45 days- you should disable this method of autentiction")
-                else:
-                    key_1_age = find_age_of_credentials(user[9])
-                    if key_1_age > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use access_key_1 and access_key_1 is older than 45 days- you should rotate this key")
+                check_credential_usage(
+                    report_file, user[0], user[10], user[9], "key_access_1")
+
             if user[13] == "true":
-                if user[15] != "N/A":
-                    days_since_key_2_was_last_used = find_age_of_credentials(
-                        user[15])
-                    if days_since_key_2_was_last_used > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use access_key_2 in the last 45 days- you should disable this method of autentiction")
-                else:
-                    key_2_age = find_age_of_credentials(user[14])
-                    if key_2_age > 45:
-                        write_message_in_report(
-                            report_file, f"ALERT: User {user[0]} did not use access_key_2 and access_key_2 is older than 45 days- you should rotate this key")
+                check_credential_usage(
+                    report_file, user[0], user[15], user[14], "key_access_2")
 
 
 @signal_when_test_starts_and_finishes
@@ -332,6 +323,7 @@ def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions
             else:
                 write_message_in_report(
                     report_file, f"ALERT: in {region} region there aren't any working access analyzers")
+
 
 """
 generate_and_save_credntial_report("report", aws)
