@@ -3,3 +3,5 @@ lib/report
 lib/test.py
 lib/__pycache__
 lib/s3_report
+lib/rds_report
+lib/ec2_report
