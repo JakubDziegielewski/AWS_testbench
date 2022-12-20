@@ -1,5 +1,0 @@
-
-Starting test s3_buckets_employ_encryption_at_rest
-Recommended encryption algorithm  (aws:kms)is used in bucket cg-cardholder-data-bucket-cloud-breach-s3-cgid6savlakxrn
-ALERT: bucket randomnames3buck does not employ encryption
-Ending test s3_buckets_employ_encryption_at_rest
