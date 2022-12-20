@@ -102,9 +102,24 @@ def mfa_delete_is_enabled(report_file, aws_api):
                 report_file, f"ALERT: Versioning is not enabled in {name} bucket"
             )
 
+@signal_when_test_starts_and_finishes
+def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_file, aws_api):
+    buckets = get_list_of_s3_buckets(report_file, aws_api)
+    for bucket in buckets:
+        name = bucket["Name"]
+        public_access_block_configuration = get_specific_bucket_configuration(
+            report_file, aws_api, "get-public-access-block", name, "PublicAccessBlockConfiguration")
+        for setting in public_access_block_configuration:
+            if public_access_block_configuration[setting] == "false":
+                write_message_in_report(
+                    report_file, f"ALERT: Public access to s3 allowed; {setting} is set to 'false'"
+                )
+
 
 """
 s3_buckets_employ_encryption_at_rest("s3_report", aws)
 s3_bucket_policy_is_set_to_deny_http_requests("s3_report", aws)
 mfa_delete_is_enabled("s3_report", aws)
+s3_buckets_are_configured_with_block_public_access_bucket_setting(
+    "s3_report", aws)
 """
