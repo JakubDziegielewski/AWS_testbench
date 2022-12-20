@@ -1,0 +1,11 @@
+
+Starting test ebs_volume_encryption_is_enabled_in_all_regions
+Ending test ebs_volume_encryption_is_enabled_in_all_regions
+
+Starting test ebs_volume_encryption_is_enabled_in_all_regions
+Ending test ebs_volume_encryption_is_enabled_in_all_regions
+
+Starting test ebs_volume_encryption_is_enabled_in_all_regions
+ALERT: in us-east-1 ebs is not encrypted by default
+ALERT: in eu-central-1 ebs is not encrypted by default
+Ending test ebs_volume_encryption_is_enabled_in_all_regions

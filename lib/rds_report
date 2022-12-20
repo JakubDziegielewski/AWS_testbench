@@ -1,0 +1,28 @@
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test encryption_is_enabled_for_rds_instances
+ALERT: Encryption is not enabled in the database with id: cg-rds-instance-rce-web-app-cgido81hd6gd3f
+Ending test encryption_is_enabled_for_rds_instances

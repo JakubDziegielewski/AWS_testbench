@@ -3,7 +3,6 @@ from awscliv2.exceptions import AWSCLIError
 import json
 from json import JSONDecodeError
 from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import find_age_of_credentials
 from auxilary_module import write_message_in_report
 
 aws = AWSAPI()
@@ -68,9 +67,9 @@ def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
         policy = get_specific_bucket_configuration(
             report_file, aws_api, "get-bucket-policy", name, "Policy")
         if policy != None:
-            statement = json.loads(policy)["Statement"]
-            for statement_property in statement:
-                if statement_property["Effect"] == "Deny" and statement_property["Condition"]["Bool"]["aws:SecureTransport"] == "false":
+            statement_list = json.loads(policy)["Statement"]
+            for statement in statement_list:
+                if statement["Effect"] == "Deny" and "Condition" in statement and statement["Condition"]["Bool"]["aws:SecureTransport"] == "false":
                     write_message_in_report(
                         report_file, f"Bucket {name} denies http requests {name}")
                     break
@@ -109,11 +108,12 @@ def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_fil
         name = bucket["Name"]
         public_access_block_configuration = get_specific_bucket_configuration(
             report_file, aws_api, "get-public-access-block", name, "PublicAccessBlockConfiguration")
-        for setting in public_access_block_configuration:
-            if public_access_block_configuration[setting] == "false":
-                write_message_in_report(
-                    report_file, f"ALERT: Public access to s3 allowed; {setting} is set to 'false'"
-                )
+        if public_access_block_configuration != None:
+            for setting in public_access_block_configuration:
+                if not public_access_block_configuration[setting]:
+                    write_message_in_report(
+                        report_file, f"ALERT: Public access to s3 allowed; {setting} is set to 'false'"
+                    )
 
 
 """
