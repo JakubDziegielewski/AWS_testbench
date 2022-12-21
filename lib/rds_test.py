@@ -28,8 +28,7 @@ def check_one_setting_in_all_rds_instances(report_file, aws_api, regions, settin
                     report_file, f"ALERT: {setting} is not enabled in the database with id: {db_instance['DBInstanceIdentifier']}")
             else:
                 write_message_in_report(
-                    report_file, f"{setting} is set correctly as enabled in the database with id: {db_instance['DBInstanceIdentifier']}"
-                )
+                    report_file, f"{setting} is set correctly as enabled in the database with id: {db_instance['DBInstanceIdentifier']}")
 
 
 @signal_when_test_starts_and_finishes
