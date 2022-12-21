@@ -164,13 +164,26 @@ def trails_are_integrated_with_cloudwatch_logs(report_file):
 @signal_when_test_starts_and_finishes
 def aws_config_is_enabled_in_all_regions(report_file):
     write_message_in_report(report_file, "Control 3.5")
-    configuration_records = make_request_to_aws(report_file, ["configservice", "describe-configuration-recorders"])
-    print(configuration_records)
-
+    configuration_recorders_text = make_request_to_aws(report_file, ["configservice", "describe-configuration-recorders"])
+    configuration_recorders = json.loads(configuration_recorders_text)["ConfigurationRecorders"]
+    for configuration_recorder in configuration_recorders:
+        if configuration_recorder["recordingGroup"]["allSupported"] and configuration_recorder["recordingGroup"]["includeGlobalResourceTypes"]:
+            write_message_in_report(report_file, "There exist a configurtion recorder that supports all resource types")
+            configuration_recorder_status_text = make_request_to_aws(report_file, ["configservice", "describe-configuration-recorder-status"])
+            configuration_recorder_status = json.loads(configuration_recorder_status_text)["ConfigurationRecordersStatus"]
+            for status in configuration_recorder_status:
+                if status["recording"] and status["lastStatus"] == "SUCCESS":
+                    write_message_in_report(report_file, "Configuration recorder works properly")
+                    break
+            else:
+                write_message_in_report(report_file, "ALERT: default configuration recorder does not work properly")
+            break
+    else:
+        write_message_in_report(report_file, "ALERT: AWS Config does not have a recorder that supports all resource types")
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
 cloudtrail_log_file_validation_is_enabled("logging_report")
 s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(
     "logging_report")
-trails_are_integrated_with_cloudwatch_logs("logging_report")"""
-aws_config_is_enabled_in_all_regions("logging_report")
+trails_are_integrated_with_cloudwatch_logs("logging_report")
+aws_config_is_enabled_in_all_regions("logging_report")"""
