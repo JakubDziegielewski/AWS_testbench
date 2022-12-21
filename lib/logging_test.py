@@ -7,20 +7,20 @@ from auxilary_module import find_age_of_setting
 
 def describe_trials(report_file):
     output = make_request_to_aws(
-        report_file, ["cloudtrail", "describe-trails"], "describe_trials")
+        report_file, ["cloudtrail", "describe-trails"])
     return json.loads(output)["trailList"]
 
 
 
 def get_trail_status(report_file, name):
     output = make_request_to_aws(report_file, [
-        "cloudtrail", "get-trail-status", "--name", name], "check_if_cloudtrail_is_logging")
+        "cloudtrail", "get-trail-status", "--name", name])
     return json.loads(output)
 
 
 def get_event_selectors(report_file, name):
     output = make_request_to_aws(report_file, [
-        "cloudtrail", "get-event-selectors", "--trail-name", name], "get_event_selectors")
+        "cloudtrail", "get-event-selectors", "--trail-name", name])
     return json.loads(output)
 
 
@@ -90,7 +90,7 @@ def cloudtrail_log_file_validation_is_enabled(report_file):
 
 def get_bucket_acl_grants(report_file, name):
     output = make_request_to_aws(report_file, [
-                                 "s3api", "get-bucket-acl", "--bucket", name], "get_bucket_acl_grants")
+                                 "s3api", "get-bucket-acl", "--bucket", name])
     return json.loads(output)["Grants"]
 
 
@@ -104,7 +104,7 @@ def check_for_group_access_in_acl(grants, uri):
 
 def get_bucket_policy(report_file, name):
     output = make_request_to_aws(
-        report_file, ["s3api", "get-bucket-policy", "--bucket", name], "get_bucket_policy")
+        report_file, ["s3api", "get-bucket-policy", "--bucket", name])
     return json.loads(output)["Policy"]
 
 
@@ -158,10 +158,19 @@ def trails_are_integrated_with_cloudwatch_logs(report_file):
                 write_message_in_report(report_file, f"ALERT: CloudTrail {name} is integrated with CloudWatch but does not work properly")
         else:
             write_message_in_report(report_file, f"ALERT: CloudTrail {name} is not integrated with CloudWatch")
-            
+
+
+
+@signal_when_test_starts_and_finishes
+def aws_config_is_enabled_in_all_regions(report_file):
+    write_message_in_report(report_file, "Control 3.5")
+    configuration_records = make_request_to_aws(report_file, ["configservice", "describe-configuration-recorders"])
+    print(configuration_records)
+
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
 cloudtrail_log_file_validation_is_enabled("logging_report")
 s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(
     "logging_report")
 trails_are_integrated_with_cloudwatch_logs("logging_report")"""
+aws_config_is_enabled_in_all_regions("logging_report")

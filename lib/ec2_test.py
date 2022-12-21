@@ -10,7 +10,7 @@ def ebs_volume_encryption_is_enabled_in_all_regions(report_file, regions):
         report_file,  "Control 2.2.1")
     for region in regions:
         output = make_request_to_aws(report_file, [
-                                     "ec2", "get-ebs-encryption-by-default", "--region", region], "ebs_volume_encryption_is_enabled_in_all_regions")
+                                     "ec2", "get-ebs-encryption-by-default", "--region", region])
         ebs_encryption_by_default = json.loads(
             output)["EbsEncryptionByDefault"]
         if not ebs_encryption_by_default:

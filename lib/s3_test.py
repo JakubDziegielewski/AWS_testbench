@@ -7,13 +7,13 @@ from auxilary_module import make_request_to_aws
 
 def get_list_of_s3_buckets(report_file):
     output = make_request_to_aws(report_file, [
-        "s3api", "list-buckets", "--output", "json"], "get_list_of_s3_buckets")
+        "s3api", "list-buckets", "--output", "json"])
     return (json.loads(output)["Buckets"])
 
 
 def get_specific_bucket_configuration(report_file, config, name, keyword):
     configuration = make_request_to_aws(report_file, [
-        "s3api", config, "--bucket", name, "--output", "json"], "get_specific_bucket_configuration")
+        "s3api", config, "--bucket", name, "--output", "json"])
     try:
         result = json.loads(configuration)[keyword]
     except JSONDecodeError as e:
@@ -77,7 +77,7 @@ def mfa_delete_is_enabled(report_file):
     for bucket in buckets:
         name = bucket["Name"]
         bucket_versioning = make_request_to_aws(report_file, [
-                                                "s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"], "mfa_delete_is_enabled")
+                                                "s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"])
         if bucket_versioning:  # bucket_versioning will be an empty string if versioning is not enabled
             try:
                 properties = json.loads(bucket_versioning)
