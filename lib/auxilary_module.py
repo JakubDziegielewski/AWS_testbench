@@ -27,12 +27,12 @@ def write_message_in_report(report_file, message):
     with open(report_file, "a") as rf:
         rf.write(f"{message}\n")
 
-def make_request_to_aws(report_file, aws_request, test_name):
+def make_request_to_aws(report_file, aws_request):
     aws_api = AWSAPI()
     try:
         output = aws_api.execute(aws_request)
     except AWSCLIError as e:
         write_message_in_report(
-            report_file, f"An error ocured while running {test_name}: {e}")
+            report_file, f"An error ocured while making a request to aws: {e}")
     else:
         return output

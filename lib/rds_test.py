@@ -6,7 +6,7 @@ from auxilary_module import make_request_to_aws
 
 def get_all_db_instances(report_file, region):
     output = make_request_to_aws(report_file, [
-                                 "rds", "describe-db-instances", "--output", "json", "--region", region], "get_all_db_instances")
+                                 "rds", "describe-db-instances", "--output", "json", "--region", region])
     db_instances = json.loads(output)["DBInstances"]
     return db_instances
 
