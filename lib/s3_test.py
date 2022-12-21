@@ -1,20 +1,18 @@
-from awscliv2.api import AWSAPI
 import json
 from json import JSONDecodeError
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import write_message_in_report
 from auxilary_module import make_request_to_aws
-aws = AWSAPI()
 
 
-def get_list_of_s3_buckets(report_file, aws_api):
-    output = make_request_to_aws(report_file, aws_api, [
+def get_list_of_s3_buckets(report_file):
+    output = make_request_to_aws(report_file, [
         "s3api", "list-buckets", "--output", "json"], "get_list_of_s3_buckets")
     return (json.loads(output)["Buckets"])
 
 
-def get_specific_bucket_configuration(report_file, aws_api, config, name, keyword):
-    configuration = make_request_to_aws(report_file, aws_api, [
+def get_specific_bucket_configuration(report_file, config, name, keyword):
+    configuration = make_request_to_aws(report_file, [
         "s3api", config, "--bucket", name, "--output", "json"], "get_specific_bucket_configuration")
     try:
         result = json.loads(configuration)[keyword]
@@ -26,14 +24,14 @@ def get_specific_bucket_configuration(report_file, aws_api, config, name, keywor
 
 
 @signal_when_test_starts_and_finishes
-def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
+def s3_buckets_employ_encryption_at_rest(report_file):
     write_message_in_report(
         report_file,  "Control 2.1.1")
-    buckets = get_list_of_s3_buckets(report_file, aws_api)
+    buckets = get_list_of_s3_buckets(report_file)
     for bucket in buckets:
         name = bucket["Name"]
         configuration = get_specific_bucket_configuration(
-            report_file, aws_api, "get-bucket-encryption", name, "ServerSideEncryptionConfiguration")
+            report_file, "get-bucket-encryption", name, "ServerSideEncryptionConfiguration")
         if configuration != None:
             rules = configuration["Rules"]
             for rule in rules:
@@ -51,14 +49,14 @@ def s3_buckets_employ_encryption_at_rest(report_file, aws_api):
 
 
 @signal_when_test_starts_and_finishes
-def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
+def s3_bucket_policy_is_set_to_deny_http_requests(report_file):
     write_message_in_report(
         report_file,  "Control 2.1.2")
-    buckets = get_list_of_s3_buckets(report_file, aws_api)
+    buckets = get_list_of_s3_buckets(report_file)
     for bucket in buckets:
         name = bucket["Name"]
         policy = get_specific_bucket_configuration(
-            report_file, aws_api, "get-bucket-policy", name, "Policy")
+            report_file, "get-bucket-policy", name, "Policy")
         if policy != None:
             statement_list = json.loads(policy)["Statement"]
             for statement in statement_list:
@@ -72,13 +70,13 @@ def s3_bucket_policy_is_set_to_deny_http_requests(report_file, aws_api):
 
 
 @signal_when_test_starts_and_finishes
-def mfa_delete_is_enabled(report_file, aws_api):
+def mfa_delete_is_enabled(report_file):
     write_message_in_report(
         report_file,  "Control 2.1.3")
-    buckets = get_list_of_s3_buckets(report_file, aws_api)
+    buckets = get_list_of_s3_buckets(report_file)
     for bucket in buckets:
         name = bucket["Name"]
-        bucket_versioning = make_request_to_aws(report_file, aws_api, [
+        bucket_versioning = make_request_to_aws(report_file, [
                                                 "s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"], "mfa_delete_is_enabled")
         if bucket_versioning:  # bucket_versioning will be an empty string if versioning is not enabled
             try:
@@ -99,14 +97,14 @@ def mfa_delete_is_enabled(report_file, aws_api):
 
 
 @signal_when_test_starts_and_finishes
-def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_file, aws_api):
+def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_file):
     write_message_in_report(
         report_file,  "Control 2.1.5")
-    buckets = get_list_of_s3_buckets(report_file, aws_api)
+    buckets = get_list_of_s3_buckets(report_file)
     for bucket in buckets:
         name = bucket["Name"]
         public_access_block_configuration = get_specific_bucket_configuration(
-            report_file, aws_api, "get-public-access-block", name, "PublicAccessBlockConfiguration")
+            report_file, "get-public-access-block", name, "PublicAccessBlockConfiguration")
         if public_access_block_configuration != None:
             for setting in public_access_block_configuration:
                 if not public_access_block_configuration[setting]:
@@ -120,9 +118,9 @@ def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_fil
 
 
 """
-s3_buckets_employ_encryption_at_rest("s3_report", aws)
-s3_bucket_policy_is_set_to_deny_http_requests("s3_report", aws)
-mfa_delete_is_enabled("s3_report", aws)
+s3_buckets_employ_encryption_at_rest("s3_report")
+s3_bucket_policy_is_set_to_deny_http_requests("s3_report")
+mfa_delete_is_enabled("s3_report")
 s3_buckets_are_configured_with_block_public_access_bucket_setting(
-    "s3_report", aws)
+    "s3_report")
 """
