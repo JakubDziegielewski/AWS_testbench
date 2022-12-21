@@ -1,5 +1,4 @@
 from awscliv2.api import AWSAPI
-from awscliv2.exceptions import AWSCLIError
 from datetime import datetime
 import json
 import base64
@@ -7,64 +6,51 @@ import csv
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import find_age_of_credentials
 from auxilary_module import write_message_in_report
+from auxilary_module import make_request_to_aws
 
 aws = AWSAPI()
 
 
 def generate_and_save_credntial_report(report_file, aws_api, credential_report="credential_report.csv"):
-
-    try:
-        aws.execute(
-            ["iam", "generate-credential-report"])
-        output = aws_api.execute(["iam", "get-credential-report"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file,  f"An error ocured while generating new credential report: {e}")
-    else:
-        encoded_report = json.loads(output)["Content"]
-        with open("credential_report.csv", "w") as cr:
-            cr.write(base64.b64decode(encoded_report).decode("utf-8"))
+    make_request_to_aws(report_file, aws_api,  [
+                        "iam", "generate-credential-report"], "generate_and_save_credntial_report")
+    output = make_request_to_aws(report_file, aws_api, [
+        "iam", "get-credential-report"], "generate_and_save_credntial_report")
+    encoded_report = json.loads(output)["Content"]
+    with open(credential_report, "w") as cr:
+        cr.write(base64.b64decode(encoded_report).decode("utf-8"))
 
 
 @signal_when_test_starts_and_finishes
 def no_root_access_key_exist(report_file, aws_api):
-
-    try:
+    write_message_in_report(
+        report_file,  "Control 1.4")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "get-account-summary"], "no_root_access_key_exist")
+    number_of_root_access_keys = json.loads(
+        output)["SummaryMap"]["AccountAccessKeysPresent"]
+    if number_of_root_access_keys == 0:
         write_message_in_report(
-            report_file,  "Control 1.4")
-        output = aws_api.execute(["iam", "get-account-summary"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file,   f"An error ocured while running test no_root_access_key_exist: {e}")
+            report_file, "No root access keys exist: True")
     else:
-        number_of_root_access_keys = json.loads(
-            output)["SummaryMap"]["AccountAccessKeysPresent"]
-        if number_of_root_access_keys == 0:
-            write_message_in_report(
-                report_file, "No root access keys exist: True")
-        else:
-            write_message_in_report(
-                report_file, f"ALERT: At leas one root access keys exists; number of access keys:{number_of_root_access_keys}")
+        write_message_in_report(
+            report_file, f"ALERT: At leas one root access keys exists; number of access keys:{number_of_root_access_keys}")
 
 
 @signal_when_test_starts_and_finishes
 def mfs_is_enabled_for_the_root_user(report_file, aws_api):
-    try:
+    write_message_in_report(
+        report_file,  "Control 1.5")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "get-account-summary"], "mfs_is_enabled_for_the_root_user")
+    number_of_root_access_keys = json.loads(
+        output)["SummaryMap"]["AccountMFAEnabled"]
+    if number_of_root_access_keys == 1:
         write_message_in_report(
-            report_file,  "Control 1.5")
-        output = aws_api.execute(["iam", "get-account-summary"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test mfs_is_enabled_for_the_root_user: {e}")
+            report_file, "mulfifactor authentication for root enabled: True")
     else:
-        number_of_root_access_keys = json.loads(
-            output)["SummaryMap"]["AccountMFAEnabled"]
-        if number_of_root_access_keys == 1:
-            write_message_in_report(
-                report_file, "mulfifactor authentication for root enabled: True")
-        else:
-            write_message_in_report(
-                report_file, "ALERT: mulfifactor authentication for root enabled: False")
+        write_message_in_report(
+            report_file, "ALERT: mulfifactor authentication for root enabled: False")
 
 
 @signal_when_test_starts_and_finishes
@@ -87,35 +73,29 @@ def eliminate_use_of_the_root_user_for_administrative_and_daily_task(report_file
 
 @signal_when_test_starts_and_finishes
 def iam_password_policy_requires_minimum_length_of_14(report_file, aws_api):
-    try:
+    write_message_in_report(
+        report_file,  "Control 1.8")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "get-account-password-policy"], "iam_password_policy_requires_minimum_length_of_14")
+    minimal_password_length = json.loads(
+        output)["PasswordPolicy"]["MinimumPasswordLength"]
+    if minimal_password_length < 14:
         write_message_in_report(
-            report_file,  "Control 1.8")
-        output = aws_api.execute(["iam", "get-account-password-policy"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test iam_password_policy_requires_minimum_length_of_14: {e}")
+            report_file, f"ALERT: minimal password length: {minimal_password_length}, shoud be: 14")
     else:
-        minimal_password_length = json.loads(
-            output)["PasswordPolicy"]["MinimumPasswordLength"]
-        if minimal_password_length < 14:
-            write_message_in_report(
-                report_file, f"ALERT: minimal password length: {minimal_password_length}, shoud be: 14")
-        else:
-            write_message_in_report(
-                report_file, f"Minimal password length is long enough")
+        write_message_in_report(
+            report_file, f"Minimal password length is long enough")
 
 
 @signal_when_test_starts_and_finishes
 def iam_password_policy_prevents_password_reuse(report_file, aws_api):
+    write_message_in_report(
+        report_file,  "Control 1.9")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "get-account-password-policy"], "iam_password_policy_prevents_password_reuse")
     try:
-        write_message_in_report(
-            report_file,  "Control 1.9")
-        output = aws_api.execute(["iam", "get-account-password-policy"])
         password_reuse_prevention = json.loads(
             output)["PasswordPolicy"]["PasswordReusePrevention"]
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test iam_password_policy_prevents_password_reuse: {e}")
     except KeyError as e:
         write_message_in_report(
             report_file, f"An error ocured while running test iam_password_policy_prevents_password_reuse: {e} is not enabled")
@@ -251,128 +231,95 @@ def access_keys_are_rotated_every_90_dys_or_less(report_file, credential_report=
 
 @signal_when_test_starts_and_finishes
 def users_recieve_permissions_only_through_groups(report_file, aws_api):
-    try:
-        write_message_in_report(
-            report_file,  "Control 1.15")
-        output = aws_api.execute(
-            ["iam", "list-users", "--query", "Users[*].UserName", "--output", "text"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test users_recieve_permissions_only_through_groups: {e}")
-    else:
-        users = output.strip("\n").split("\t")
-        for user in users:
-            try:
-                attached_user_policies = json.loads(aws_api.execute(
-                    ["iam", "list-attached-user-policies", "--user-name", user]))
-                user_policies = json.loads(aws_api.execute(
-                    ["iam", "list-user-policies", "--user-name", user]))
-            except AWSCLIError as e:
-                write_message_in_report(
-                    report_file, f"An error ocured while running test users_recieve_permissions_only_through_groups: {e}")
-            else:
-                if len(attached_user_policies["AttachedPolicies"]) > 0:
-                    write_message_in_report(
-                        report_file, f"ALERT: User {user} has following attached policies: {attached_user_policies['AttachedPolicies']}; it's recommended to give permissions only through groups!")
-                else:
-                    write_message_in_report(
-                        report_file, f"User {user} does not have attached polices")
-                if len(user_policies["PolicyNames"]) > 0:
-                    write_message_in_report(
-                        report_file, f"ALERT: User {user} has following user policies: {user_policies['PolicyNames']}; it's recommended to give permissions only through groups!")
-                else:
-                    write_message_in_report(
-                        report_file, f"User {user} does not have user polices")
+    write_message_in_report(
+        report_file,  "Control 1.15")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "list-users", "--query", "Users[*].UserName", "--output", "text"], "users_recieve_permissions_only_through_groups")
+    users = output.strip("\n").split("\t")
+    for user in users:
+        attached_user_policies_result = make_request_to_aws(report_file, aws_api, [
+                                                            "iam", "list-attached-user-policies", "--user-name", user], "users_recieve_permissions_only_through_groups")
+        attached_user_policies = json.loads(attached_user_policies_result)
+        user_policies_result = make_request_to_aws(report_file, aws_api, [
+            "iam", "list-user-policies", "--user-name", user], "users_recieve_permissions_only_through_groups")
+        user_policies = json.loads(user_policies_result)
+        if len(attached_user_policies["AttachedPolicies"]) > 0:
+            write_message_in_report(
+                report_file, f"ALERT: User {user} has following attached policies: {attached_user_policies['AttachedPolicies']}; it's recommended to give permissions only through groups!")
+        else:
+            write_message_in_report(
+                report_file, f"User {user} does not have attached polices")
+        if len(user_policies["PolicyNames"]) > 0:
+            write_message_in_report(
+                report_file, f"ALERT: User {user} has following user policies: {user_policies['PolicyNames']}; it's recommended to give permissions only through groups!")
+        else:
+            write_message_in_report(
+                report_file, f"User {user} does not have user polices")
 
 
 @signal_when_test_starts_and_finishes
 def full_administrative_privileges_are_not_attached(report_file, aws_api):
-    try:
-        write_message_in_report(
-            report_file,  "Control 1.16")
-        output = aws_api.execute(
-            ["iam", "list-policies", "--only-attached", "--output", "json"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test full_administrative_privileges_are_not_attached: {e}")
-    else:
-        policies = json.loads(output)["Policies"]
-        for policy in policies:
-            try:
-                policy_version_properties = aws_api.execute(
-                    ["iam", "get-policy-version", "--policy-arn", policy["Arn"], "--version-id", policy["DefaultVersionId"], "--output", "json"])
-            except:
+    write_message_in_report(
+        report_file,  "Control 1.16")
+    output = make_request_to_aws(report_file, aws_api, [
+        "iam", "list-policies", "--only-attached", "--output", "json"], "full_administrative_privileges_are_not_attached")
+    policies = json.loads(output)["Policies"]
+    for policy in policies:
+        policy_version_properties = make_request_to_aws(report_file, aws_api, [
+                                                        "iam", "get-policy-version", "--policy-arn", policy["Arn"], "--version-id", policy["DefaultVersionId"], "--output", "json"], "full_administrative_privileges_are_not_attached")
+        policy_properties = json.loads(policy_version_properties)[
+            "PolicyVersion"]
+        statement = policy_properties["Document"]["Statement"]
+        for position in statement:
+            if position["Effect"] == "Allow" and position["Action"] == "*" and position["Resource"] == "*":
                 write_message_in_report(
-                    report_file, f"An error ocured while running test full_administrative_privileges_are_not_attached: {e}")
+                    report_file, f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed")
             else:
-                policy_properties = json.loads(policy_version_properties)[
-                    "PolicyVersion"]
-                statement = policy_properties["Document"]["Statement"]
-                for position in statement:
-                    if position["Effect"] == "Allow" and position["Action"] == "*" and position["Resource"] == "*":
-                        write_message_in_report(
-                            report_file, f"ALERT: allowed * action in policy to * resources; policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']}; Make sure that only neccessary actions are allowed")
-                    else:
-                        write_message_in_report(
-                            report_file, f"Test passed for policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']};")
+                write_message_in_report(
+                    report_file, f"Test passed for policy Arn: {policy['Arn']}; version: {policy['DefaultVersionId']};")
 
 
 @signal_when_test_starts_and_finishes
 def support_role_has_been_created(report_file, aws_api):
-    try:
+    write_message_in_report(
+        report_file,  "Control 1.17")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "list-policies", "--query", "Policies[?PolicyName == 'AWSSupportAccess']", "--output", "json"], "support_role_has_been_created")
+    aws_support_access = json.loads(output)
+    arn = aws_support_access[0]["Arn"]
+    entities_for_policy = make_request_to_aws(report_file, aws_api, [
+                                              "iam", "list-entities-for-policy", "--policy-arn", arn, "--output", "json"], "support_role_has_been_created")
+    policy_roles = json.loads(entities_for_policy)["PolicyRoles"]
+    if len(policy_roles) == 0:
         write_message_in_report(
-            report_file,  "Control 1.17")
-        output = aws_api.execute(
-            ["iam", "list-policies", "--query", "Policies[?PolicyName == 'AWSSupportAccess']", "--output", "json"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test support_role_has_been_created: {e}")
+            report_file, f"ALERT: There is no support role for managing incidents with AWS Support")
     else:
-        aws_support_access = json.loads(output)
-        arn = aws_support_access[0]["Arn"]
-        try:
-            entities_for_policy = aws_api.execute(
-                ["iam", "list-entities-for-policy", "--policy-arn", arn, "--output", "json"])
-        except AWSCLIError as e:
-            write_message_in_report(
-                report_file, f"An error ocured while running test support_role_has_been_created: {e}")
-        else:
-            policy_roles = json.loads(entities_for_policy)["PolicyRoles"]
-            if len(policy_roles) == 0:
-                write_message_in_report(
-                    report_file, f"ALERT: There is no support role for managing incidents with AWS Support")
-            else:
-                write_message_in_report(
-                    report_file, f"Support role for managing incidents with AWS Support exists")
+        write_message_in_report(
+            report_file, f"Support role for managing incidents with AWS Support exists")
 
 
 @signal_when_test_starts_and_finishes
 def expired_certificates_stored_in_aws_iam_are_removed(report_file, aws_api):
-    try:
+    write_message_in_report(
+        report_file,  "Control 1.19")
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "iam", "list-server-certificates", "--output", "json"], "expired_certificates_stored_in_aws_iam_are_removed")
+    server_cerificates_metadata_list = json.loads(
+        output)["ServerCertificateMetadataList"]
+    if len(server_cerificates_metadata_list) == 0:
         write_message_in_report(
-            report_file,  "Control 1.19")
-        output = aws_api.execute(
-            ["iam", "list-server-certificates", "--output", "json"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test expired_certificates_stored_in_aws_iam_are_removed: {e}")
-    else:
-        server_cerificates_metadata_list = json.loads(
-            output)["ServerCertificateMetadataList"]
-        if len(server_cerificates_metadata_list) == 0:
+            report_file, f"Currently there are 0 certificates stored")
+    for certificate in server_cerificates_metadata_list:
+        expiration = certificate["Expiration"]
+        expiration_date = datetime.strptime(
+            expiration[:10] + " " + expiration[11:19], "%Y-%m-%d %H:%M:%S")
+        current_date = datetime.now()
+        if current_date > expiration_date:
             write_message_in_report(
-                report_file, f"Currently there are 0 certificates stored")
-        for certificate in server_cerificates_metadata_list:
-            expiration = certificate["Expiration"]
-            expiration_date = datetime.strptime(
-                expiration[:10] + " " + expiration[11:19], "%Y-%m-%d %H:%M:%S")
-            current_date = datetime.now()
-            if current_date > expiration_date:
-                write_message_in_report(
-                    report_file, f"ALERT: Certificate with id: {certificate['ServerCertificateId']} is expired. You should delete it")
-            else:
-                write_message_in_report(
-                    report_file, f"Certificate with id: {certificate['ServerCertificateId']} is valid")
+                report_file, f"ALERT: Certificate with id: {certificate['ServerCertificateId']} is expired. You should delete it")
+        else:
+            write_message_in_report(
+                report_file, f"Certificate with id: {certificate['ServerCertificateId']} is valid")
 
 
 @signal_when_test_starts_and_finishes
@@ -380,40 +327,35 @@ def iam_access_analyzer_is_enabled_for_all_regions(report_file, aws_api, regions
     write_message_in_report(
         report_file,  "Control 1.20")
     for region in regions:
-        try:
-            output = aws_api.execute(
-                ["accessanalyzer", "list-analyzers", "--region", region, "--output", "json"])
-        except AWSCLIError as e:
-            write_message_in_report(
-                report_file, f"An error ocured while running test iam_access_analyzer_is_enabled_for_all_regions: {e}")
-        else:
-            analyzers = json.loads(output)["analyzers"]
-            for analyzer in analyzers:
-                if analyzer["status"] == "ACTIVE":
-                    write_message_in_report(
-                        report_file, f"In {region} region there is at least one working access analuzer")
-                    break
-            else:
+        output = make_request_to_aws(report_file, aws_api, [
+                                     "accessanalyzer", "list-analyzers", "--region", region, "--output", "json"], "iam_access_analyzer_is_enabled_for_all_regions")
+        analyzers = json.loads(output)["analyzers"]
+        for analyzer in analyzers:
+            if analyzer["status"] == "ACTIVE":
                 write_message_in_report(
-                    report_file, f"ALERT: in {region} region there aren't any working access analyzers")
+                    report_file, f"In {region} region there is at least one working access analuzer")
+                break
+        else:
+            write_message_in_report(
+                report_file, f"ALERT: in {region} region there aren't any working access analyzers")
 
 
 """
-generate_and_save_credntial_report("report", aws)
-no_root_access_key_exist("report", aws)
-mfs_is_enabled_for_the_root_user("report", aws)
-eliminate_use_of_the_root_user_for_administrative_and_daily_task("report")
-iam_password_policy_requires_minimum_length_of_14("report", aws)
-iam_password_policy_prevents_password_reuse("report", aws)
-mfa_enabled_for_all_users("report")
-check_for_unused_keys("report")
-check_for_unused_credentials_older_than_45_days("report")
-users_have_multiple_access_keys("report")
-access_keys_are_rotated_every_90_dys_or_less("report")
-users_recieve_permissions_only_through_groups("report", aws)
-full_administrative_privileges_are_not_attached("report", aws)
-support_role_has_been_created("report", aws)
-expired_certificates_stored_in_aws_iam_are_removed("report", aws)
+generate_and_save_credntial_report("iam_report", aws)
+no_root_access_key_exist("iam_report", aws)
+mfs_is_enabled_for_the_root_user("iam_report", aws)
+eliminate_use_of_the_root_user_for_administrative_and_daily_task("iam_report")
+iam_password_policy_requires_minimum_length_of_14("iam_report", aws)
+iam_password_policy_prevents_password_reuse("iam_report", aws)
+mfa_enabled_for_all_users("iam_report")
+check_for_unused_keys("iam_report")
+check_for_unused_credentials_older_than_45_days("iam_report")
+users_have_multiple_access_keys("iam_report")
+access_keys_are_rotated_every_90_dys_or_less("iam_report")
+users_recieve_permissions_only_through_groups("iam_report", aws)
+full_administrative_privileges_are_not_attached("iam_report", aws)
+support_role_has_been_created("iam_report", aws)
+expired_certificates_stored_in_aws_iam_are_removed("iam_report", aws)
 iam_access_analyzer_is_enabled_for_all_regions(
-    "report", aws, ["us-east-1", "eu-central-1"])
+    "iam_report", aws, ["us-east-1", "eu-central-1"])
 """

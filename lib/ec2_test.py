@@ -1,8 +1,8 @@
 from awscliv2.api import AWSAPI
-from awscliv2.exceptions import AWSCLIError
 import json
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import write_message_in_report
+from auxilary_module import make_request_to_aws
 
 aws = AWSAPI()
 
@@ -12,22 +12,16 @@ def ebs_volume_encryption_is_enabled_in_all_regions(report_file, aws_api, region
     write_message_in_report(
         report_file,  "Control 2.2.1")
     for region in regions:
-        try:
-            output = aws_api.execute(
-                ["ec2", "get-ebs-encryption-by-default", "--region", region])
-        except AWSCLIError as e:
+        output = make_request_to_aws(report_file, aws_api, [
+                                     "ec2", "get-ebs-encryption-by-default", "--region", region], "ebs_volume_encryption_is_enabled_in_all_regions")
+        ebs_encryption_by_default = json.loads(
+            output)["EbsEncryptionByDefault"]
+        if not ebs_encryption_by_default:
             write_message_in_report(
-                report_file, f"An error ocured while running test ebs_volume_encryption_is_enabled_in_all_regions: {e}")
+                report_file, f"ALERT: in {region} ebs is not encrypted by default")
         else:
-            ebs_encryption_by_default = json.loads(
-                output)["EbsEncryptionByDefault"]
-            if not ebs_encryption_by_default:
-                write_message_in_report(
-                    report_file, f"ALERT: in {region} ebs is not encrypted by default")
-            else:
-                write_message_in_report(
-                    report_file, f"EBS is encrypted by default in {region} region"
-                )
+            write_message_in_report(
+                report_file, f"EBS is encrypted by default in {region} region")
 
 
 """

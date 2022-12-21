@@ -1,5 +1,4 @@
 from datetime import datetime
-from awscliv2.api import AWSAPI
 from awscliv2.exceptions import AWSCLIError
 
 

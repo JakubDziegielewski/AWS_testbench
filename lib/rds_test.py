@@ -1,22 +1,17 @@
 from awscliv2.api import AWSAPI
-from awscliv2.exceptions import AWSCLIError
 import json
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import write_message_in_report
+from auxilary_module import make_request_to_aws
 
 aws = AWSAPI()
 
 
 def get_all_db_instances(report_file, aws_api, region):
-    try:
-        output = aws_api.execute(
-            ["rds", "describe-db-instances", "--output", "json", "--region", region])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while trying to describe db instances: {e}")
-    else:
-        db_instances = json.loads(output)["DBInstances"]
-        return db_instances
+    output = make_request_to_aws(report_file, aws_api, [
+                                 "rds", "describe-db-instances", "--output", "json", "--region", region], "get_all_db_instances")
+    db_instances = json.loads(output)["DBInstances"]
+    return db_instances
 
 
 def check_one_setting_in_all_rds_instances(report_file, aws_api, regions, setting):

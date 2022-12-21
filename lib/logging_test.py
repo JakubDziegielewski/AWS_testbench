@@ -1,5 +1,4 @@
 from awscliv2.api import AWSAPI
-from awscliv2.exceptions import AWSCLIError
 import json
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import write_message_in_report

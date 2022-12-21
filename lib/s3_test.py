@@ -1,5 +1,4 @@
 from awscliv2.api import AWSAPI
-from awscliv2.exceptions import AWSCLIError
 import json
 from json import JSONDecodeError
 from auxilary_module import signal_when_test_starts_and_finishes
@@ -9,34 +8,12 @@ aws = AWSAPI()
 
 
 def get_list_of_s3_buckets(report_file, aws_api):
-    """
-    try:
-        output = aws_api.execute(
-            ["s3api", "list-buckets", "--output", "json"])
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while getting list of s3 buckets: {e}")
-    else:
-        """
     output = make_request_to_aws(report_file, aws_api, [
         "s3api", "list-buckets", "--output", "json"], "get_list_of_s3_buckets")
     return (json.loads(output)["Buckets"])
 
 
 def get_specific_bucket_configuration(report_file, aws_api, config, name, keyword):
-    """
-    try:
-        configuration = aws_api.execute(
-            ["s3api", config, "--bucket", name, "--output", "json"])
-        result = json.loads(configuration)[keyword]
-    except AWSCLIError as e:
-        write_message_in_report(
-            report_file, f"An error ocured while running test s3_buckets_employ_encryption_at_rest: {e}")
-    except JSONDecodeError as e:
-        write_message_in_report(
-            report_file, f"ALERT: bucket {name} does not return correct config, checked configuration ({config}) probably does not exist: {e}")
-    else:
-        """
     configuration = make_request_to_aws(report_file, aws_api, [
         "s3api", config, "--bucket", name, "--output", "json"], "get_specific_bucket_configuration")
     try:
@@ -101,9 +78,8 @@ def mfa_delete_is_enabled(report_file, aws_api):
     buckets = get_list_of_s3_buckets(report_file, aws_api)
     for bucket in buckets:
         name = bucket["Name"]
-        #bucket_versioning = aws_api.execute(
-           #["s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"])
-        bucket_versioning = make_request_to_aws(report_file, aws_api, ["s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"], "mfa_delete_is_enabled")
+        bucket_versioning = make_request_to_aws(report_file, aws_api, [
+                                                "s3api", "get-bucket-versioning", "--bucket", name, "--output", "json"], "mfa_delete_is_enabled")
         if bucket_versioning:  # bucket_versioning will be an empty string if versioning is not enabled
             try:
                 properties = json.loads(bucket_versioning)
@@ -143,8 +119,10 @@ def s3_buckets_are_configured_with_block_public_access_bucket_setting(report_fil
                     )
 
 
+"""
 s3_buckets_employ_encryption_at_rest("s3_report", aws)
 s3_bucket_policy_is_set_to_deny_http_requests("s3_report", aws)
 mfa_delete_is_enabled("s3_report", aws)
 s3_buckets_are_configured_with_block_public_access_bucket_setting(
     "s3_report", aws)
+"""
