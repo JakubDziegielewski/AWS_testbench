@@ -2,6 +2,7 @@ import json
 from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import write_message_in_report
 from auxilary_module import make_request_to_aws
+from auxilary_module import find_age_of_setting
 
 
 def describe_trials(report_file):
@@ -10,11 +11,11 @@ def describe_trials(report_file):
     return json.loads(output)["trailList"]
 
 
-def check_if_cloudtrail_is_logging(report_file, name):
+
+def get_trail_status(report_file, name):
     output = make_request_to_aws(report_file, [
         "cloudtrail", "get-trail-status", "--name", name], "check_if_cloudtrail_is_logging")
-    trail_status = json.loads(output)
-    return trail_status["IsLogging"]
+    return json.loads(output)
 
 
 def get_event_selectors(report_file, name):
@@ -56,7 +57,7 @@ def cloudtrail_is_enabled_in_all_regions(report_file):
     for trail in trail_list:
         if trail["IsMultiRegionTrail"]:
             name = trail["Name"]
-            if check_if_cloudtrail_is_logging(report_file, name):
+            if get_trail_status(report_file, name)["IsLogging"]:
                 event_selectors = get_event_selectors(report_file, name)
                 if "AdvancedEventSelectors" in event_selectors:
                     if check_if_management_in_advanced_event_selectors(event_selectors["AdvancedEventSelectors"]):
@@ -142,9 +143,25 @@ def s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(report_fi
             write_message_in_report(
                 report_file, f"Policy for s3 bucket {name} is configured properly")
 
+
+@signal_when_test_starts_and_finishes
+def trails_are_integrated_with_cloudwatch_logs(report_file):
+    write_message_in_report(report_file, "Control 3.4")
+    trail_list = describe_trials(report_file)
+    for trial in trail_list:
+        name = trial["Name"]
+        if "CloudWatchLogsLogGroupArn" in trial:
+            trail_status = get_trail_status(report_file, name)
+            if "LatestCloudWatchLogsDeliveryTime" in trail_status and find_age_of_setting(trail_status["LatestCloudWatchLogsDeliveryTime"]) < 1:
+                write_message_in_report(report_file, f"CloudTrail {name} is integrated with CloudWatch and works properly")
+            else:
+                write_message_in_report(report_file, f"ALERT: CloudTrail {name} is integrated with CloudWatch but does not work properly")
+        else:
+            write_message_in_report(report_file, f"ALERT: CloudTrail {name} is not integrated with CloudWatch")
+            
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
 cloudtrail_log_file_validation_is_enabled("logging_report")
-"""
 s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(
     "logging_report")
+trails_are_integrated_with_cloudwatch_logs("logging_report")"""

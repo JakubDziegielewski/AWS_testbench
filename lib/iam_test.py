@@ -3,7 +3,7 @@ import json
 import base64
 import csv
 from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import find_age_of_credentials
+from auxilary_module import find_age_of_setting
 from auxilary_module import write_message_in_report
 from auxilary_module import make_request_to_aws
 
@@ -58,7 +58,7 @@ def eliminate_use_of_the_root_user_for_administrative_and_daily_task(report_file
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
             if user[0] == "<root_account>":
-                days_since_root_password_was_last_used = find_age_of_credentials(
+                days_since_root_password_was_last_used = find_age_of_setting(
                     user[4])
                 if days_since_root_password_was_last_used < 7:
                     write_message_in_report(
@@ -148,7 +148,7 @@ def check_credential_usage(report_file, name, last_used, last_rotated, credentia
     auxilary method for check_for_unused_credentials_older_than_45_days
     """
     if last_used != "N/A" and last_used != "no_information":
-        days_since_credential_was_last_used = find_age_of_credentials(
+        days_since_credential_was_last_used = find_age_of_setting(
             last_used)
         if days_since_credential_was_last_used > 45:
             write_message_in_report(
@@ -157,7 +157,7 @@ def check_credential_usage(report_file, name, last_used, last_rotated, credentia
             write_message_in_report(
                 report_file, f"{credential} for user {name} is set correctly")
     else:
-        credential_age = find_age_of_credentials(last_rotated)
+        credential_age = find_age_of_setting(last_rotated)
         if credential_age > 45:
             write_message_in_report(
                 report_file, f"ALERT: User {name} did not use current {credential} and thier {credential} is older than 45 days- you should update {credential}")
@@ -209,7 +209,7 @@ def access_keys_are_rotated_every_90_dys_or_less(report_file, credential_report=
         csv_reader = csv.reader(cr, delimiter=",")
         for user in csv_reader:
             if user[8] == "true":
-                key_1_age = find_age_of_credentials(user[9])
+                key_1_age = find_age_of_setting(user[9])
                 if key_1_age > 90:
                     write_message_in_report(
                         report_file, f"ALERT: access_key_1 if user {user[0]} is older than 90 days")
@@ -217,7 +217,7 @@ def access_keys_are_rotated_every_90_dys_or_less(report_file, credential_report=
                     write_message_in_report(
                         report_file, f"access_key_1 is fresh enough")
             if user[13] == "true":
-                key_2_age = find_age_of_credentials(user[14])
+                key_2_age = find_age_of_setting(user[14])
                 if key_2_age > 90:
                     write_message_in_report(
                         report_file, f"ALERT: access_key_2 if user {user[0]} is older than 90 days")

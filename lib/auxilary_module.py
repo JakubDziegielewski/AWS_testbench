@@ -15,7 +15,7 @@ def signal_when_test_starts_and_finishes(test):
     return wrap
 
 
-def find_age_of_credentials(checked_position):
+def find_age_of_setting(checked_position):
     searched_date = datetime.strptime(
         checked_position[:10] + " " + checked_position[11:19], "%Y-%m-%d %H:%M:%S")
     current_date = datetime.now()
