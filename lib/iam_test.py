@@ -1,4 +1,3 @@
-from awscliv2.api import AWSAPI
 from datetime import datetime
 import json
 import base64
@@ -7,8 +6,6 @@ from auxilary_module import signal_when_test_starts_and_finishes
 from auxilary_module import find_age_of_credentials
 from auxilary_module import write_message_in_report
 from auxilary_module import make_request_to_aws
-
-aws = AWSAPI()
 
 
 def generate_and_save_credntial_report(report_file, credential_report="credential_report.csv"):
