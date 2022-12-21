@@ -101,6 +101,20 @@ def check_for_group_access_in_acl(grants, uri):
     return False
 
 
+def get_bucket_policy(report_file, name):
+    output = make_request_to_aws(
+        report_file, ["s3api", "get-bucket-policy", "--bucket", name], "get_bucket_policy")
+    return json.loads(output)["Policy"]
+
+
+def check_if_policy_allows_all_actions(policy):
+    statement = json.loads(policy)["Statement"]
+    for rule in statement:
+        if rule["Effect"] == "Allow" and rule["Principal"] == "*":
+            return True
+    return False
+
+
 @signal_when_test_starts_and_finishes
 def s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(report_file):
     write_message_in_report(report_file, "Control 3.3")
@@ -120,7 +134,13 @@ def s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(report_fi
         else:
             write_message_in_report(
                 report_file, f"s3 bucket {name} is secured from authenticated users")
-
+        policy = get_bucket_policy(report_file, name)
+        if check_if_policy_allows_all_actions(policy):
+            write_message_in_report(
+                report_file, f"ALERT: Policy for s3 bucket {name} has a rule that allows full control")
+        else:
+            write_message_in_report(
+                report_file, f"Policy for s3 bucket {name} is configured properly")
 
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
