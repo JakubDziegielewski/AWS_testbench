@@ -49,7 +49,7 @@ def check_if_read_write_and_include_management_events_in_event_selectors(event_s
     return False
 
 
-@ signal_when_test_starts_and_finishes
+@signal_when_test_starts_and_finishes
 def cloudtrail_is_enabled_in_all_regions(report_file):
     write_message_in_report(report_file, "Control 3.1")
     trail_list = describe_trials(report_file)
@@ -71,9 +71,60 @@ def cloudtrail_is_enabled_in_all_regions(report_file):
                         break
     else:
         write_message_in_report(
-                            report_file, f"ALERT: there are not any cloudtrails logging management events in all regions")
+            report_file, f"ALERT: there are not any cloudtrails logging management events in all regions")
+
+
+@signal_when_test_starts_and_finishes
+def cloudtrail_log_file_validation_is_enabled(report_file):
+    write_message_in_report(report_file, "Control 3.2")
+    trail_list = describe_trials(report_file)
+    for trail in trail_list:
+        if trail["LogFileValidationEnabled"]:
+            write_message_in_report(
+                report_file, f"Cloudtrail {trail['Name']} has log file validation enabled")
+        else:
+            write_message_in_report(
+                report_file, f"ALERT: Cloudtrail {trail['Name']} does not have log file validation enabled")
+
+
+def get_bucket_acl_grants(report_file, name):
+    output = make_request_to_aws(report_file, [
+                                 "s3api", "get-bucket-acl", "--bucket", name], "get_bucket_acl_grants")
+    return json.loads(output)["Grants"]
+
+
+def check_for_group_access_in_acl(grants, uri):
+    for grant in grants:
+        grantee = grant["Grantee"]
+        if grantee["Type"] == "Group" and "URI" in grantee and grantee["URI"] == uri:
+            return True
+    return False
+
+
+@signal_when_test_starts_and_finishes
+def s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(report_file):
+    write_message_in_report(report_file, "Control 3.3")
+    trail_list = describe_trials(report_file)
+    for trail in trail_list:
+        name = trail["S3BucketName"]
+        grants = get_bucket_acl_grants(report_file, name)
+        if check_for_group_access_in_acl(grants, "http://acs.amazonaws.com/groups/global/AllUsers"):
+            write_message_in_report(
+                report_file, f"ALERT: public access is allowed for s3 bucket {name}, which is used for storing logs from cloudtrail")
+        else:
+            write_message_in_report(
+                report_file, f"s3 bucket {name} is secured from public access")
+        if check_for_group_access_in_acl(grants, "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"):
+            write_message_in_report(
+                report_file, f"ALERT: Access for anyone with AWS accountis allowed for s3 bucket {name}, which is used for storing logs from cloudtrail")
+        else:
+            write_message_in_report(
+                report_file, f"s3 bucket {name} is secured from authenticated users")
 
 
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
+cloudtrail_log_file_validation_is_enabled("logging_report")
 """
+s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible(
+    "logging_report")
