@@ -221,7 +221,6 @@ def cloudtrail_logs_are_encrypted_at_rest_using_kms_cmk(report_file):
                 report_file, f"ALERT: cloudtrial {trail['Name']} logs are not encrypted at rest using KMS CMKs")
 
 
-
 @signal_when_test_starts_and_finishes
 def rotation_for_customer_created_summetric_cmks_is_enabled(report_file):
     write_message_in_report(report_file, "Control 3.8")
@@ -229,15 +228,38 @@ def rotation_for_customer_created_summetric_cmks_is_enabled(report_file):
     key_list = json.loads(key_list_text)["Keys"]
     for key in key_list:
         key_id = key["KeyId"]
-        key_details_text = make_request_to_aws(report_file, ["kms", "describe-key", "--key-id", key_id])
+        key_details_text = make_request_to_aws(
+            report_file, ["kms", "describe-key", "--key-id", key_id])
         key_details = json.loads(key_details_text)["KeyMetadata"]
         if "KeySpec" in key_details and key_details["KeySpec"] == "SYMMETRIC_DEFAULT":
-            rotation_status_text = make_request_to_aws(report_file, ["kms", "get-key-rotation-status", "--key-id", key_id])
+            rotation_status_text = make_request_to_aws(
+                report_file, ["kms", "get-key-rotation-status", "--key-id", key_id])
             rotation_status = json.loads(rotation_status_text)
             if "KeyRotationEnabled" in rotation_status and rotation_status["KeyRotationEnabled"]:
-                write_message_in_report(report_file, f"Key with id {key_id} has rotation enabled")
+                write_message_in_report(
+                    report_file, f"Key with id {key_id} has rotation enabled")
             else:
-                write_message_in_report(report_file, f"ALERT: Key with id {key_id} does not have rotation enabled")
+                write_message_in_report(
+                    report_file, f"ALERT: Key with id {key_id} does not have rotation enabled")
+
+
+@signal_when_test_starts_and_finishes
+def vpc_flow_logging_is_enabled_in_all_vpcs(report_file, regions):
+    write_message_in_report(report_file, "Control 3.9")
+    for region in regions:
+        vpc_ids_text = make_request_to_aws(report_file, [
+                                           "ec2", "describe-vpcs", "--region", region, "--query", "Vpcs[].VpcId"])
+        vpc_ids = json.loads(vpc_ids_text)
+        for vpc_id in vpc_ids:
+            flow_logs_text = make_request_to_aws(report_file, [
+                                                 "ec2", "describe-flow-logs", "--filter", f"Name=resource-id, Values={vpc_id}"])
+            flow_logs = json.loads(flow_logs_text)["FlowLogs"]
+            if flow_logs:
+                write_message_in_report(
+                    report_file, f"VPC with id {vpc_id} in region {region} has flow logging enabled")
+            else:
+                write_message_in_report(
+                    report_file, f"ALERT: VPC with id {vpc_id} in region {region} does not have flow logging enabled")
 
 
 """
@@ -249,4 +271,6 @@ trails_are_integrated_with_cloudwatch_logs("logging_report")
 aws_config_is_enabled_in_all_regions("logging_report")
 s3_bucket_access_logging_is_enabled_on_the_cloudtrail_s3_bucket("logging_report")
 cloudtrail_logs_are_encrypted_at_rest_using_kms_cmk("logging_report")
-rotation_for_customer_created_summetric_cmks_is_enabled("logging_report")"""
+rotation_for_customer_created_summetric_cmks_is_enabled("logging_report")
+vpc_flow_logging_is_enabled_in_all_vpcs(
+    "logging_report", ["us-east-1", "eu-central-1"])"""
