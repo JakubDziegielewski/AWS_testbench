@@ -23,15 +23,6 @@ def get_event_selectors(report_file, name):
     return json.loads(output)
 
 
-def check_if_read_only_in_advanced_selectors(advanced_event_selectors):
-    for event_selector in advanced_event_selectors:
-        if "FieldSelectors" in event_selector:
-            for selector in event_selector["FieldSelectors"]:
-                if selector["Field"] == "readOnly":
-                    return True
-    return False
-
-
 def get_bucket_acl_grants(report_file, name):
     output = make_request_to_aws(report_file, [
                                  "s3api", "get-bucket-acl", "--bucket", name])
@@ -324,6 +315,7 @@ def object_level_loggging_for_read_and_write_events_is_enabled_for_s3_bucket(rep
                 else:
                     write_message_in_report(
                         report_file, f"ALERT: Trail {name} does not have object level logging enabled for s3 buckets")
+
 
 """
 cloudtrail_is_enabled_in_all_regions("logging_report")
