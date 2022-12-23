@@ -259,7 +259,43 @@ def vpc_flow_logging_is_enabled_in_all_vpcs(report_file, regions):
                     report_file, f"VPC with id {vpc_id} in region {region} has flow logging enabled")
             else:
                 write_message_in_report(
-                    report_file, f"ALERT: VPC with id {vpc_id} in region {region} does not have flow logging enabled")
+                    report_file, f"ALERT: VPC with id {vpc_id} in region {region} does not log the flow")
+
+
+@signal_when_test_starts_and_finishes
+def object_level_loggging_for_write_events_is_enabled_for_s3_bucket(report_file):
+    write_message_in_report(report_file, "Control 3.10")
+    trail_list_text = make_request_to_aws(
+        report_file, ["cloudtrail", "list-trails"])
+    trail_list = json.loads(trail_list_text)["Trails"]
+    for trail in trail_list:
+        name = trail["Name"]
+        region = trail["HomeRegion"]
+        trail_details_text = make_request_to_aws(
+            report_file, ["cloudtrail", "get-trail", "--name", name, "--region", region])
+        trail_details = json.loads(trail_details_text)["Trail"]
+        if trail_details["IsMultiRegionTrail"]:
+            event_resources_text = make_request_to_aws(report_file, [
+                "cloudtrail", "get-event-selectors", "--region", trail["HomeRegion"], "--trail-name", trail["Name"], "--query", "EventSelectors[*].DataResources[][].Values[]"])
+            if event_resources_text != "null\n":
+                event_resources = json.loads(event_resources_text)
+                if "arn:aws:s3" in event_resources:
+                    write_message_in_report(
+                        report_file, f"Trail {name} has object level logging enabled for s3 buckets")
+                else:
+                    write_message_in_report(
+                        report_file, f"ALERT: Trail {name} does not have object level logging enabled for s3 buckets")
+            else:
+                advanced_event_selectors_text = make_request_to_aws(report_file, [
+                                                                    "cloudtrail", "get-event-selectors", "--region", trail["HomeRegion"], "--trail-name", trail["Name"], "--query", "AdvancedEventSelectors[*].FieldSelectors[*].Equals[][]"])
+                advanced_event_selectors = json.loads(
+                    advanced_event_selectors_text)
+                if "AWS::S3::Object" in advanced_event_selectors:
+                    write_message_in_report(
+                        report_file, f"Trail {name} has object level logging enabled for s3 buckets")
+                else:
+                    write_message_in_report(
+                        report_file, f"ALERT: Trail {name} does not have object level logging enabled for s3 buckets")
 
 
 """
@@ -273,4 +309,6 @@ s3_bucket_access_logging_is_enabled_on_the_cloudtrail_s3_bucket("logging_report"
 cloudtrail_logs_are_encrypted_at_rest_using_kms_cmk("logging_report")
 rotation_for_customer_created_summetric_cmks_is_enabled("logging_report")
 vpc_flow_logging_is_enabled_in_all_vpcs(
-    "logging_report", ["us-east-1", "eu-central-1"])"""
+    "logging_report", ["us-east-1", "eu-central-1"])
+object_level_loggging_for_write_events_is_enabled_for_s3_bucket(
+    "logging_report")"""
