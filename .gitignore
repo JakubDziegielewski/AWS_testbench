@@ -7,3 +7,5 @@ lib/rds_report
 lib/ec2_report
 lib/iam_report
 lib/logging_report
+lib/trails_*
+lib/monitoring_report
