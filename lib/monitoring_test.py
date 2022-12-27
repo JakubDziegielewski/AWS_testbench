@@ -278,6 +278,20 @@ def log_metric_filter_and_alarm_exist_for_aws_organizations_changes(report_file)
         report_file, "aws_organizations_changes")
 
 
+@signal_when_test_starts_and_finishes
+def security_hub_enabled(report_file):
+    write_message_in_report(report_file, "Control 4.16")
+    hub_description_text = make_request_to_aws(
+        report_file, ["securityhub", "describe-hub"])
+    try:
+        hub_description = json.loads(hub_description_text)
+    except JSONDecodeError as e:
+        write_message_in_report(report_file, "Securityhub is not enabled")
+    else:
+        if "HubArn" in hub_description and len(hub_description["HubArn"]) > 0:
+            write_message_in_report(report_file, "SecurityHub is enabled")
+
+
 """
 describe_trials("monitoring_report")
 log_metric_filter_and_alarm_exist_for_unauthorized_API_calls(
@@ -285,6 +299,6 @@ log_metric_filter_and_alarm_exist_for_unauthorized_API_calls(
 log_metric_filter_and_alarm_exist_for_management_console_sign_in_without_mfa(
     "monitoring_report")
 log_metric_filter_and_alarm_exist_for_iam_policy_changes("monitoring_report")
-
 log_metric_filter_and_alarm_exist_for_route_table_changes("monitoring_report")
+security_hub_enabled("monitoring_report")
 """
