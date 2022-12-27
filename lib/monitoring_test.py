@@ -8,7 +8,9 @@ from datetime import datetime
 date = datetime.now().strftime("%Y_%m_%d")
 
 patterns = {
-    "unauthorized_api_calls": "{ ($.errorCode = *UnauthorizedOperation) || ($.errorCode = AccessDenied*) || ($.sourceIPAddress!=delivery.logs.amazonaws.com) || ($.eventName!=HeadBucket) }"
+    "unauthorized_api_calls": '{ ($.errorCode = *UnauthorizedOperation) || ($.errorCode = AccessDenied*) || ($.sourceIPAddress!=delivery.logs.amazonaws.com) || ($.eventName!=HeadBucket) }',
+    "management_console_sign_in_without_mfa": '{ ($.eventName = "ConsoleLogin") && ($.additionalEventData.MFAUsed != "Yes") }'
+
 }
 
 
@@ -166,6 +168,14 @@ def log_metric_filter_and_alarm_exist_for_unauthorized_API_calls(report_file):
         report_file, "unauthorized_api_calls")
 
 
+@signal_when_test_starts_and_finishes
+def log_metric_filter_and_alarm_exist_for_management_console_sign_in_without_mfa(report_file):
+    write_message_in_report(report_file, "Control 4.2")
+    log_metric_filter_and_alarm_exist_for_setting(
+        report_file, "management_console_sign_in_without_mfa")
+
+
 # describe_trials("monitoring_report")
 log_metric_filter_and_alarm_exist_for_unauthorized_API_calls(
     "monitoring_report")
+log_metric_filter_and_alarm_exist_for_management_console_sign_in_without_mfa("monitoring_report")
