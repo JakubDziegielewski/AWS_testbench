@@ -102,7 +102,7 @@ def no_security_groups_allow_ingress_from_all_ips_to_remote_server_administratio
 
 
 @signal_when_test_starts_and_finishes
-def default_security_group_of_every_vpc_restricts_all_traffic(report_file, regions = ['us-east-1']):
+def default_security_group_of_every_vpc_restricts_all_traffic(report_file, regions=['us-east-1']):
     write_message_in_report(report_file, "Control 5.4")
     for region in regions:
         security_groups_text = make_request_to_aws(
@@ -111,17 +111,22 @@ def default_security_group_of_every_vpc_restricts_all_traffic(report_file, regio
         for security_group in security_groups:
             if security_group["GroupName"] == "default":
                 if len(security_group["IpPermissions"]) > 0:
-                    write_message_in_report(report_file, f"ALERT: Default security group in {region} has an inbound rule")
+                    write_message_in_report(
+                        report_file, f"ALERT: Default security group in {region} has an inbound rule")
                 else:
-                    write_message_in_report(report_file, f"Default security group in {region} does not have an inbound rule")
+                    write_message_in_report(
+                        report_file, f"Default security group in {region} does not have an inbound rule")
                 if len(security_group["IpPermissionsEgress"]) > 0:
-                    write_message_in_report(report_file, f"ALERT: Default security group in {region} has an outbound rule")
+                    write_message_in_report(
+                        report_file, f"ALERT: Default security group in {region} has an outbound rule")
                 else:
-                    write_message_in_report(report_file, f"Default security group in {region} does not have an outbound rule")
+                    write_message_in_report(
+                        report_file, f"Default security group in {region} does not have an outbound rule")
 
+
+"""
 no_network_acls_allow_ingress_from_all_ips_to_remote_server_administration_ports(
     "networking_report")
-
 no_security_groups_allow_ingress_from_all_ips_to_remote_server_administration_ports("networking_report")
-
 default_security_group_of_every_vpc_restricts_all_traffic("networking_report")
+"""

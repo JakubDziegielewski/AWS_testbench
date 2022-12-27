@@ -9,3 +9,4 @@ lib/iam_report
 lib/logging_report
 lib/trails_*
 lib/monitoring_report
+lib/networking_report
