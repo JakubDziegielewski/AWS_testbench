@@ -1,8 +1,12 @@
 import json
-from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import write_message_in_report
-from auxilary_module import make_request_to_aws
-
+if __name__ == "__main__":
+    from auxilary_module import signal_when_test_starts_and_finishes
+    from auxilary_module import write_message_in_report
+    from auxilary_module import make_request_to_aws
+else:
+    from lib.auxilary_module import signal_when_test_starts_and_finishes
+    from lib.auxilary_module import write_message_in_report
+    from lib.auxilary_module import make_request_to_aws
 
 def get_all_db_instances(report_file, region):
     output = make_request_to_aws(report_file, [

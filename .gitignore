@@ -10,3 +10,6 @@ lib/logging_report
 lib/trails_*
 lib/monitoring_report
 lib/networking_report
+./report
+./trails_*
+./credential_report.csv

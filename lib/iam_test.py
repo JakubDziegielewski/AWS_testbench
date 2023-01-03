@@ -2,10 +2,16 @@ from datetime import datetime
 import json
 import base64
 import csv
-from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import find_age_of_setting
-from auxilary_module import write_message_in_report
-from auxilary_module import make_request_to_aws
+if __name__ == "__main__":
+    from auxilary_module import signal_when_test_starts_and_finishes
+    from auxilary_module import find_age_of_setting
+    from auxilary_module import write_message_in_report
+    from auxilary_module import make_request_to_aws
+else:
+    from lib.auxilary_module import signal_when_test_starts_and_finishes
+    from lib.auxilary_module import find_age_of_setting
+    from lib.auxilary_module import write_message_in_report
+    from lib.auxilary_module import make_request_to_aws
 
 
 def generate_and_save_credntial_report(report_file, credential_report="credential_report.csv"):

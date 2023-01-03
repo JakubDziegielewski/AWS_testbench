@@ -1,9 +1,14 @@
 import json
 from json import JSONDecodeError
-from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import write_message_in_report
-from auxilary_module import make_request_to_aws
 from datetime import datetime
+if __name__ == "__main__":
+    from auxilary_module import signal_when_test_starts_and_finishes
+    from auxilary_module import write_message_in_report
+    from auxilary_module import make_request_to_aws
+else:
+    from lib.auxilary_module import signal_when_test_starts_and_finishes
+    from lib.auxilary_module import write_message_in_report
+    from lib.auxilary_module import make_request_to_aws
 
 date = datetime.now().strftime("%Y_%m_%d")
 

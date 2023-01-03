@@ -1,9 +1,13 @@
 import json
 from json import JSONDecodeError
-from auxilary_module import signal_when_test_starts_and_finishes
-from auxilary_module import write_message_in_report
-from auxilary_module import make_request_to_aws
-
+if __name__ == "__main__":
+    from auxilary_module import signal_when_test_starts_and_finishes
+    from auxilary_module import write_message_in_report
+    from auxilary_module import make_request_to_aws
+else:
+    from lib.auxilary_module import signal_when_test_starts_and_finishes
+    from lib.auxilary_module import write_message_in_report
+    from lib.auxilary_module import make_request_to_aws
 
 def get_list_of_s3_buckets(report_file):
     output = make_request_to_aws(report_file, [

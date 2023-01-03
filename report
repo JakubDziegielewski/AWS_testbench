@@ -1,0 +1,372 @@
+
+Starting test no_root_access_key_exist
+Control 1.4
+No root access keys exist: True
+Ending test no_root_access_key_exist
+
+Starting test mfs_is_enabled_for_the_root_user
+Control 1.5
+ALERT: mulfifactor authentication for root enabled: False
+Ending test mfs_is_enabled_for_the_root_user
+
+Starting test eliminate_use_of_the_root_user_for_administrative_and_daily_task
+Control 1.7
+Root acccount was not accessed in the last 7 days: Password was last used: 2022-12-21T16:19:23+00:00, Access key 1 was last used: N/A, Access key 2 was last used: N/A
+Ending test eliminate_use_of_the_root_user_for_administrative_and_daily_task
+
+Starting test iam_password_policy_requires_minimum_length_of_14
+Control 1.8
+ALERT: minimal password length: 8, shoud be: 14
+Ending test iam_password_policy_requires_minimum_length_of_14
+
+Starting test iam_password_policy_prevents_password_reuse
+Control 1.9
+ALERT: password_reuse_prevention is set to: 2, shoud be: 24
+Ending test iam_password_policy_prevents_password_reuse
+
+Starting test mfa_enabled_for_all_users
+Control 1.10
+ALERT! User jake does not have mfa enabled
+ALERT! User test_account does not have mfa enabled
+Ending test mfa_enabled_for_all_users
+
+Starting test check_for_unused_keys
+Control 1.11
+Setting Access_key_1 for User jake is set correctly
+Setting Access_key_2 for User jake is set correctly
+Setting Access_key_1 for User test_account is set correctly
+Setting Access_key_2 for User test_account is set correctly
+Ending test check_for_unused_keys
+
+Starting test check_for_unused_credentials_older_than_45_days
+Control 1.12
+key_access_1 for user cloudgoat is set correctly
+password for user jake is set correctly
+key_access_1 for user jake is set correctly
+password for user test_account is set correctly
+key_access_1 for user test_key_account is set correctly
+Ending test check_for_unused_credentials_older_than_45_days
+
+Starting test users_have_multiple_access_keys
+Control 1.13
+User user has no more than 1 key active
+User <root_account> has no more than 1 key active
+User cloudgoat has no more than 1 key active
+User jake has no more than 1 key active
+User test_account has no more than 1 key active
+User test_key_account has no more than 1 key active
+Ending test users_have_multiple_access_keys
+
+Starting test access_keys_are_rotated_every_90_dys_or_less
+Control 1.14
+ALERT: access_key_1 if user cloudgoat is older than 90 days
+ALERT: access_key_1 if user jake is older than 90 days
+access_key_1 is fresh enough
+Ending test access_keys_are_rotated_every_90_dys_or_less
+
+Starting test users_recieve_permissions_only_through_groups
+Control 1.15
+ALERT: User cloudgoat has following attached policies: [{'PolicyName': 'AdministratorAccess', 'PolicyArn': 'arn:aws:iam::aws:policy/AdministratorAccess'}]; it's recommended to give permissions only through groups!
+User cloudgoat does not have user polices
+ALERT: User jake has following attached policies: [{'PolicyName': 'IAMReadOnlyAccess', 'PolicyArn': 'arn:aws:iam::aws:policy/IAMReadOnlyAccess'}]; it's recommended to give permissions only through groups!
+User jake does not have user polices
+User test_account does not have attached polices
+User test_account does not have user polices
+User test_key_account does not have attached polices
+User test_key_account does not have user polices
+Ending test users_recieve_permissions_only_through_groups
+
+Starting test full_administrative_privileges_are_not_attached
+Control 1.16
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/AWSLambdaBasicExecutionRole-a80b722c-500f-4f00-ae51-a5c29a2273c3; version: v1;
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/AWSLambdaBasicExecutionRole-a80b722c-500f-4f00-ae51-a5c29a2273c3; version: v1;
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/CloudTrailPolicyForCloudWatchLogs_ea07a2a3-a95c-4440-bb7d-ea9ed59b27c9; version: v1;
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/CloudTrailPolicyForCloudWatchLogs_ea07a2a3-a95c-4440-bb7d-ea9ed59b27c9; version: v1;
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/s3crr_for_mygreatbucket-kd2022_63a090; version: v1;
+Test passed for policy Arn: arn:aws:iam::278368863034:policy/service-role/s3crr_for_mygreatbucket-kd2022_63a090; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AutoScalingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSElasticLoadBalancingServiceRolePolicy; version: v7;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonRDSServiceRolePolicy; version: v12;
+ALERT: allowed * action in policy to * resources; policy Arn: arn:aws:iam::aws:policy/AdministratorAccess; version: v1; Make sure that only neccessary actions are allowed
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AmazonSSMServiceRolePolicy; version: v14;
+Test passed for policy Arn: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore; version: v2;
+Test passed for policy Arn: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore; version: v2;
+Test passed for policy Arn: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore; version: v2;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSSupportServiceRolePolicy; version: v26;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSSupportServiceRolePolicy; version: v26;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSSupportServiceRolePolicy; version: v26;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSTrustedAdvisorServiceRolePolicy; version: v9;
+Test passed for policy Arn: arn:aws:iam::aws:policy/IAMReadOnlyAccess; version: v4;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSApplicationAutoscalingDynamoDBTablePolicy; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSSecurityHubServiceRolePolicy; version: v9;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSSecurityHubServiceRolePolicy; version: v9;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSConfigServiceRolePolicy; version: v38;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSConfigServiceRolePolicy; version: v38;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSConfigServiceRolePolicy; version: v38;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds; version: v1;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AccessAnalyzerServiceRolePolicy; version: v8;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSGlobalAcceleratorSLRPolicy; version: v6;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSGlobalAcceleratorSLRPolicy; version: v6;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSGlobalAcceleratorSLRPolicy; version: v6;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSGlobalAcceleratorSLRPolicy; version: v6;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSGlobalAcceleratorSLRPolicy; version: v6;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder; version: v3;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder; version: v3;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder; version: v3;
+Test passed for policy Arn: arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder; version: v3;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Test passed for policy Arn: arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForImageBuilder; version: v17;
+Ending test full_administrative_privileges_are_not_attached
+
+Starting test support_role_has_been_created
+Control 1.17
+ALERT: There is no support role for managing incidents with AWS Support
+Ending test support_role_has_been_created
+
+Starting test expired_certificates_stored_in_aws_iam_are_removed
+Control 1.19
+Currently there are 0 certificates stored
+Ending test expired_certificates_stored_in_aws_iam_are_removed
+
+Starting test iam_access_analyzer_is_enabled_for_all_regions
+Control 1.20
+ALERT: in us-east-1 region there aren't any working access analyzers
+ALERT: in eu-central-1 region there aren't any working access analyzers
+Ending test iam_access_analyzer_is_enabled_for_all_regions
+
+Starting test s3_buckets_employ_encryption_at_rest
+Control 2.1.1
+ALERT: bucket aws-cloudtrail-logs-278368863034-0fc557d9 does not return correct config, checked configuration (get-bucket-encryption) probably does not exist: Expecting value: line 2 column 1 (char 1)
+ALERT: bucket aws-cloudtrail-logs-278368863034-b7e12e68 does not return correct config, checked configuration (get-bucket-encryption) probably does not exist: Expecting value: line 2 column 1 (char 1)
+ALERT: bucket config-bucket-278368863034 does not return correct config, checked configuration (get-bucket-encryption) probably does not exist: Expecting value: line 2 column 1 (char 1)
+ALERT: bucket newrandombuck01 does not return correct config, checked configuration (get-bucket-encryption) probably does not exist: Expecting value: line 2 column 1 (char 1)
+Recommended encryption algorithm  (AES256) is used in bucket randomnames3buck
+Ending test s3_buckets_employ_encryption_at_rest
+
+Starting test s3_bucket_policy_is_set_to_deny_http_requests
+Control 2.1.2
+ALERT: Bucket aws-cloudtrail-logs-278368863034-0fc557d9 does not deny http requests aws-cloudtrail-logs-278368863034-0fc557d9
+ALERT: Bucket aws-cloudtrail-logs-278368863034-b7e12e68 does not deny http requests aws-cloudtrail-logs-278368863034-b7e12e68
+ALERT: Bucket config-bucket-278368863034 does not deny http requests config-bucket-278368863034
+ALERT: Bucket newrandombuck01 does not deny http requests newrandombuck01
+Bucket randomnames3buck denies http requests randomnames3buck
+Ending test s3_bucket_policy_is_set_to_deny_http_requests
+
+Starting test mfa_delete_is_enabled
+Control 2.1.3
+ALERT: Versioning is not enabled in aws-cloudtrail-logs-278368863034-0fc557d9 bucket
+ALERT: Versioning is not enabled in aws-cloudtrail-logs-278368863034-b7e12e68 bucket
+ALERT: Versioning is not enabled in config-bucket-278368863034 bucket
+ALERT: Versioning is not enabled in newrandombuck01 bucket
+ALERT: MFA Delete is not enabled in randomnames3buck bucket
+Ending test mfa_delete_is_enabled
+
+Starting test s3_buckets_are_configured_with_block_public_access_bucket_setting
+Control 2.1.5
+BlockPublicAcls in s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is set correctly
+IgnorePublicAcls in s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is set correctly
+BlockPublicPolicy in s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is set correctly
+RestrictPublicBuckets in s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is set correctly
+BlockPublicAcls in s3 bucket aws-cloudtrail-logs-278368863034-b7e12e68 is set correctly
+IgnorePublicAcls in s3 bucket aws-cloudtrail-logs-278368863034-b7e12e68 is set correctly
+BlockPublicPolicy in s3 bucket aws-cloudtrail-logs-278368863034-b7e12e68 is set correctly
+RestrictPublicBuckets in s3 bucket aws-cloudtrail-logs-278368863034-b7e12e68 is set correctly
+BlockPublicAcls in s3 bucket config-bucket-278368863034 is set correctly
+IgnorePublicAcls in s3 bucket config-bucket-278368863034 is set correctly
+BlockPublicPolicy in s3 bucket config-bucket-278368863034 is set correctly
+RestrictPublicBuckets in s3 bucket config-bucket-278368863034 is set correctly
+BlockPublicAcls in s3 bucket newrandombuck01 is set correctly
+IgnorePublicAcls in s3 bucket newrandombuck01 is set correctly
+BlockPublicPolicy in s3 bucket newrandombuck01 is set correctly
+RestrictPublicBuckets in s3 bucket newrandombuck01 is set correctly
+BlockPublicAcls in s3 bucket randomnames3buck is set correctly
+IgnorePublicAcls in s3 bucket randomnames3buck is set correctly
+BlockPublicPolicy in s3 bucket randomnames3buck is set correctly
+RestrictPublicBuckets in s3 bucket randomnames3buck is set correctly
+Ending test s3_buckets_are_configured_with_block_public_access_bucket_setting
+
+Starting test ebs_volume_encryption_is_enabled_in_all_regions
+Control 2.2.1
+ALERT: in us-east-1 ebs is not encrypted by default
+ALERT: in eu-central-1 ebs is not encrypted by default
+Ending test ebs_volume_encryption_is_enabled_in_all_regions
+
+Starting test encryption_is_enabled_for_rds_instances
+Control 2.3.1
+Ending test encryption_is_enabled_for_rds_instances
+
+Starting test auto_minor_version_upgrade_feature_is_enabled_for_rds_instances
+Control 2.3.2
+Ending test auto_minor_version_upgrade_feature_is_enabled_for_rds_instances
+
+Starting test public_access_is_not_given_to_rds_instance
+Control 2.3.3
+Ending test public_access_is_not_given_to_rds_instance
+
+Starting test cloudtrail_is_enabled_in_all_regions
+Control 3.1
+There exist at least one cloudtrail logging management events in all regions: management-events
+Ending test cloudtrail_is_enabled_in_all_regions
+
+Starting test cloudtrail_log_file_validation_is_enabled
+Control 3.2
+ALERT: Cloudtrail management-events does not have log file validation enabled
+Ending test cloudtrail_log_file_validation_is_enabled
+
+Starting test s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible
+Control 3.3
+s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is secured from public access
+s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is secured from authenticated users
+Policy for s3 bucket aws-cloudtrail-logs-278368863034-0fc557d9 is configured properly
+Ending test s3_bucket_used_to_store_cloudtrail_logs_is_not_publicly_accessible
+
+Starting test trails_are_integrated_with_cloudwatch_logs
+Control 3.4
+CloudTrail management-events is integrated with CloudWatch and works properly
+Ending test trails_are_integrated_with_cloudwatch_logs
+
+Starting test aws_config_is_enabled_in_all_regions
+Control 3.5
+There exist a configurtion recorder that supports all resource types
+Configuration recorder works properly
+Ending test aws_config_is_enabled_in_all_regions
+
+Starting test s3_bucket_access_logging_is_enabled_on_the_cloudtrail_s3_bucket
+Control 3.6
+ALERT: bucket aws-cloudtrail-logs-278368863034-0fc557d9 does not have logging enabled
+Ending test s3_bucket_access_logging_is_enabled_on_the_cloudtrail_s3_bucket
+
+Starting test cloudtrail_logs_are_encrypted_at_rest_using_kms_cmk
+Control 3.7
+ALERT: cloudtrial management-events logs are not encrypted at rest using KMS CMKs
+Ending test cloudtrail_logs_are_encrypted_at_rest_using_kms_cmk
+
+Starting test rotation_for_customer_created_summetric_cmks_is_enabled
+Control 3.8
+ALERT: Key with id 0d254a0e-640c-4a5d-8a56-e976ce231bbc does not have rotation enabled
+Key with id 349f4ee5-fca1-474f-8bcd-64637a789dd2 has rotation enabled
+Key with id ba9226c7-e9ef-4f0d-9d9a-a82ea534a098 has rotation enabled
+Ending test rotation_for_customer_created_summetric_cmks_is_enabled
+
+Starting test vpc_flow_logging_is_enabled_in_all_vpcs
+Control 3.9
+ALERT: VPC with id vpc-05abf2cc5ad37cae5 in region us-east-1 does not log the flow
+ALERT: VPC with id vpc-0ac21bfa1cb84eae6 in region eu-central-1 does not log the flow
+Ending test vpc_flow_logging_is_enabled_in_all_vpcs
+
+Starting test object_level_loggging_for_read_and_write_events_is_enabled_for_s3_bucket
+Control 3.10 and Control 3.11
+Trail management-events has object level logging enabled for s3 buckets
+Ending test object_level_loggging_for_read_and_write_events_is_enabled_for_s3_bucket
+
+Starting test log_metric_filter_and_alarm_exist_for_unauthorized_API_calls
+Control 4.1
+log metric filter for unauthorized_api_calls exists
+Alarm for unauthorized_api_calls exists
+Ending test log_metric_filter_and_alarm_exist_for_unauthorized_API_calls
+
+Starting test log_metric_filter_and_alarm_exist_for_management_console_sign_in_without_mfa
+Control 4.2
+log metric filter for management_console_sign_in_without_mfa exists
+ALERT: alarm does not exist for management_console_sign_in_without_mfa
+Ending test log_metric_filter_and_alarm_exist_for_management_console_sign_in_without_mfa
+
+Starting test log_metric_filter_and_alarm_exist_for_iam_policy_changes
+Control 4.4
+ALERT: log metric filter for iam_policy_changes does not exist
+Ending test log_metric_filter_and_alarm_exist_for_iam_policy_changes
+
+Starting test log_metric_filter_and_alarm_exist_for_route_table_changes
+Control 4.13
+ALERT: log metric filter for route_table_changes does not exist
+Ending test log_metric_filter_and_alarm_exist_for_route_table_changes
+
+Starting test security_hub_enabled
+Control 4.16
+Securityhub is not enabled
+Ending test security_hub_enabled
+
+Starting test no_network_acls_allow_ingress_from_all_ips_to_remote_server_administration_ports
+Control 5.1
+ALERT: Network acl with id acl-067a6e50c122f5723  in us-east-1 has a rule that allows ingress from 0.0.0.0/0 to remote server administration ports
+Ending test no_network_acls_allow_ingress_from_all_ips_to_remote_server_administration_ports
+
+Starting test no_security_groups_allow_ingress_from_all_ips_to_remote_server_administration_ports
+Control 5.2 and Control 5.3
+ALERT: Security group launch-wizard-1  in us-east-1 has a rule that allows ingress from 0.0.0.0/0 to remote server administration ports
+Security group launch-wizard-1 in us-east-1 does not allow ingress from ::/0 to remote server administration ports
+Security group default in us-east-1 does not allow ingress from 0.0.0.0/0 to remote server administration ports
+Security group default in us-east-1 does not allow ingress from ::/0 to remote server administration ports
+Ending test no_security_groups_allow_ingress_from_all_ips_to_remote_server_administration_ports
+
+Starting test default_security_group_of_every_vpc_restricts_all_traffic
+Control 5.4
+Default security group in us-east-1 does not have an inbound rule
+Default security group in us-east-1 does not have an outbound rule
+Ending test default_security_group_of_every_vpc_restricts_all_traffic
